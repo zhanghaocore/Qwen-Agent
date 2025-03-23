@@ -13,17 +13,19 @@ class TextCleaner:
         # 配置正则表达式规则
         self.rules = {
             'multiple_spaces': re.compile(r'\s+'),
-            # 修改特殊字符规则，保留常见标点
-            'special_chars': re.compile(r'[^\w\s\.,;:!?()[\]{}"\'\-]'),
+            # 修改特殊字符规则，更好地保留常见标点
+            'special_chars': re.compile(r'[^\w\s\.,;:!?()[\]{}"\'\-+]'),
             'urls': re.compile(r'https?://\S+'),
             'emails': re.compile(r'\S+@\S+\.\S+'),
         }
         
         # 技术术语保护列表，清洗时保留
         self.tech_terms = [
-            'API', 'REST', 'JSON', 'XML', 'HTTP', 'HTTPS', 'GET', 'POST',
-            'PUT', 'DELETE', 'SQL', 'NoSQL', 'Python', 'Flask', 'Django',
-            'FastAPI', 'CSV', 'DataFrame', 'OAuth', 'JWT'
+            'API', 'REST', 'RESTful', 'JSON', 'XML', 'HTTP', 'HTTPS', 'GET', 'POST',
+            'PUT', 'DELETE', 'SQL', 'NoSQL', 'Python', 'Java', 'JavaScript', 
+            'TypeScript', 'Flask', 'Django', 'FastAPI', 'Spring', 'Express',
+            'CSV', 'DataFrame', 'OAuth', 'JWT', 'GraphQL', 'MongoDB', 'MySQL',
+            'PostgreSQL', 'Redis', 'Docker', 'Kubernetes', 'Git', 'GitHub'
         ]
         
     def clean_text(self, text: str) -> str:
@@ -43,19 +45,23 @@ class TextCleaner:
         # 保存技术术语（临时替换为标记，以防被规则清洗掉）
         protected_terms = {}
         for i, term in enumerate(self.tech_terms):
+            # 使用大小写不敏感匹配，但保留原文大小写
             pattern = re.compile(r'\b{}\b'.format(re.escape(term)), re.IGNORECASE)
-            if pattern.search(text):
-                placeholder = f"__TECH_TERM_{i}__"
-                protected_terms[placeholder] = term
-                text = pattern.sub(placeholder, text)
+            matches = list(pattern.finditer(text))
+            
+            for match_idx, match in enumerate(matches):
+                match_text = match.group(0)  # 获取实际匹配的文本
+                placeholder = f"__TECH_TERM_{i}_{match_idx}__"
+                protected_terms[placeholder] = term  # 存储标准化的技术术语
+                text = text[:match.start()] + placeholder + text[match.end():]
         
         # 标准化空白字符
         text = self.rules['multiple_spaces'].sub(' ', text)
         
-        # 处理特殊字符，但保留基本标点
+        # 处理特殊字符，但保留必要标点
         text = self.rules['special_chars'].sub('', text)
         
-        # 恢复保护的技术术语
+        # 恢复保护的技术术语（使用正确的大小写形式）
         for placeholder, term in protected_terms.items():
             text = text.replace(placeholder, term)
             

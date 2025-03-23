@@ -2,7 +2,9 @@
 文本预处理器主模块
 整合清洗、分割、术语识别和规范化功能
 """
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
+import re
+import json
 
 from .text_cleaner import TextCleaner
 from .sentence_splitter import SentenceSplitter
@@ -17,6 +19,12 @@ class PreprocessedText:
     """
     
     def __init__(self, original_text: str):
+        """
+        初始化预处理文本对象
+        
+        Args:
+            original_text: 原始文本
+        """
         self.original_text = original_text
         self.cleaned_text = ""
         self.sentences = []
@@ -25,6 +33,44 @@ class PreprocessedText:
         self.technical_terms = []
         self.normalized_text = ""
         self.metadata = {}
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        将对象转换为字典表示
+        
+        Returns:
+            代表当前对象的字典
+        """
+        return {
+            'original_text': self.original_text,
+            'cleaned_text': self.cleaned_text,
+            'sentences': self.sentences,
+            'tokens': self.tokens,
+            'tagged_tokens': self.tagged_tokens,
+            'technical_terms': self.technical_terms,
+            'normalized_text': self.normalized_text,
+            'metadata': self.metadata
+        }
+    
+    def to_json(self) -> str:
+        """
+        将对象转换为JSON字符串
+        
+        Returns:
+            JSON格式的字符串表示
+        """
+        def convert_to_serializable(obj):
+            if isinstance(obj, dict):
+                return {k: convert_to_serializable(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [convert_to_serializable(item) for item in obj]
+            elif isinstance(obj, tuple):
+                return list(obj)
+            else:
+                return obj
+                
+        serializable_dict = convert_to_serializable(self.to_dict())
+        return json.dumps(serializable_dict, ensure_ascii=False, indent=2)
 
 
 class TextPreprocessor:
@@ -33,7 +79,7 @@ class TextPreprocessor:
     整合文本清洗、句子分割、术语识别和文本规范化功能
     """
     
-    def __init__(self, tech_dictionary_path=None):
+    def __init__(self, tech_dictionary_path: Optional[str] = None):
         """
         初始化文本预处理器
         
@@ -92,10 +138,38 @@ class TextPreprocessor:
             'normalization_applied': normalizing_result['normalization_applied']
         })
         
-        # 简单分词 (实际应用中可能需要更复杂的分词)
-        result.tokens = result.normalized_text.split()
+        # 5. 分词 (简单基于空格的分词，实际应用中可能需要更复杂的分词)
+        result.tokens = self._tokenize(result.normalized_text)
+        result.metadata['token_count'] = len(result.tokens)
         
         return result
+    
+    def _tokenize(self, text: str) -> List[str]:
+        """
+        简单的文本分词
+        
+        Args:
+            text: 要分词的文本
+            
+        Returns:
+            分词结果列表
+        """
+        if not text:
+            return []
+            
+        # 英文分词 - 基于空格和标点
+        tokens = []
+        
+        # 移除标点符号，分割成token
+        # 保留字母、数字和中文字符
+        cleaned_text = re.sub(r'[^\w\s\u4e00-\u9fff]', ' ', text)
+        
+        # 按空格分割
+        for token in cleaned_text.split():
+            if token:
+                tokens.append(token)
+        
+        return tokens
     
     def process_batch(self, texts: List[str]) -> List[PreprocessedText]:
         """
@@ -119,12 +193,16 @@ class TextPreprocessor:
         Returns:
             包含预处理结果的字典
         """
-        return {
-            'original_text': preprocessed.original_text,
-            'cleaned_text': preprocessed.cleaned_text,
-            'sentences': preprocessed.sentences,
-            'tokens': preprocessed.tokens,
-            'technical_terms': preprocessed.technical_terms,
-            'normalized_text': preprocessed.normalized_text,
-            'metadata': preprocessed.metadata
-        } 
+        return preprocessed.to_dict()
+    
+    def to_json(self, preprocessed: PreprocessedText) -> str:
+        """
+        将预处理文本对象转换为JSON字符串
+        
+        Args:
+            preprocessed: 预处理后的文本对象
+            
+        Returns:
+            JSON格式的字符串
+        """
+        return preprocessed.to_json() 
