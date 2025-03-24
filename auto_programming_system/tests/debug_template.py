@@ -54,6 +54,8 @@ def debug_rendering():
         # 获取原始模板文本
         template_loader = jinja2.FileSystemLoader(templates_dir)
         jinja_env = jinja2.Environment(loader=template_loader)
+        if jinja_env.loader is None:
+            raise ValueError("Template loader is not initialized")
         template_source = jinja_env.loader.get_source(jinja_env, f"{template_name}.py.jinja")[0]
         
         print("\n原始模板内容片段:")

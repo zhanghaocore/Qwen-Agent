@@ -25,7 +25,16 @@ class CodeValidator:
             security_level: 安全级别 ("relaxed", "standard", "strict")
         """
         self.security_level = security_level
-        self.sandbox = SafeSandbox(security_level)
+        
+        # 根据安全级别设置超时时间
+        timeout_map = {
+            "relaxed": 60,    # 宽松模式：60秒
+            "standard": 30,   # 标准模式：30秒
+            "strict": 15      # 严格模式：15秒
+        }
+        timeout = timeout_map.get(security_level, 30)  # 默认30秒
+        
+        self.sandbox = SafeSandbox(timeout=timeout)
         self.test_generator = TestGenerator()
         self.validator = ValidationExecutor()
         self.analyzer = CodeAnalyzer()

@@ -10,7 +10,19 @@
 """
 
 import json
-from autoprogrammer import AutoProgrammingSystem, RequirementAnalyzer, CodeGenerator, CodeValidator, CodeOptimizer
+import sys
+import os
+
+# 添加项目根目录到Python路径
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+
+from auto_programming_system import (
+    AutoProgrammingSystem,
+    RequirementAnalyzer,
+    CodeGenerator,
+    CodeValidator,
+    CodeOptimizer
+)
 
 def basic_code_generation():
     """展示基本的代码生成功能"""

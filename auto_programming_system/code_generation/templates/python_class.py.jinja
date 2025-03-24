@@ -1,0 +1,55 @@
+"""
+{{ class_docstring }}
+"""
+
+{% if imports %}
+{% for import_statement in imports %}
+{{ import_statement }}
+{% endfor %}
+{% endif %}
+
+class {{ class_name }}{% if base_classes %}({{ base_classes|join(', ') }}){% endif %}:
+    """{{ class_description }}"""
+    
+    def __init__(self{% if init_params %}, {{ init_params|join(', ') }}{% endif %}):
+        """
+        初始化{{ class_name }}实例
+        
+        {% if init_params_docs %}
+        Args:
+            {% for param, desc in init_params_docs.items() %}
+            {{ param }}: {{ desc }}
+            {% endfor %}
+        {% endif %}
+        """
+        {% if init_body %}
+        {% for line in init_body %}
+        {{ line }}
+        {% endfor %}
+        {% endif %}
+    
+    {% if methods %}
+    {% for method in methods %}
+    def {{ method.name }}(self{% if method.params %}, {{ method.params|join(', ') }}{% endif %}){% if method.return_type %} -> {{ method.return_type }}{% endif %}:
+        """
+        {{ method.description }}
+        
+        {% if method.params_docs %}
+        Args:
+            {% for param, desc in method.params_docs.items() %}
+            {{ param }}: {{ desc }}
+            {% endfor %}
+        {% endif %}
+        {% if method.return_desc %}
+        Returns:
+            {{ method.return_desc }}
+        {% endif %}
+        """
+        {% if method.body %}
+        {% for line in method.body %}
+        {{ line }}
+        {% endfor %}
+        {% endif %}
+    
+    {% endfor %}
+    {% endif %} 

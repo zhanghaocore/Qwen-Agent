@@ -8,7 +8,7 @@ import sys
 import os
 from typing import Dict, Any, Optional
 
-from auto_programming_system.requirement_analysis.preprocessor.preprocessor import TextPreprocessor
+from .preprocessor import TextPreprocessor
 
 
 def convert_to_serializable(obj: Any) -> Any:
@@ -44,7 +44,9 @@ def preprocess_text(args: argparse.Namespace) -> Optional[Any]:
         处理结果
     """
     # 创建预处理器
-    preprocessor = TextPreprocessor(args.dictionary)
+    preprocessor = TextPreprocessor()
+    if args.dictionary:
+        preprocessor.load_dictionary(args.dictionary)
     
     # 读取输入文本
     if args.input_file:

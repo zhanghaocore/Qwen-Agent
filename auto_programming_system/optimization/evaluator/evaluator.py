@@ -22,7 +22,7 @@ class VariantEvaluator:
             security_level: 安全级别
         """
         self.security_level = security_level
-        self.sandbox = SafeSandbox(security_level)
+        self.sandbox = SafeSandbox(timeout=30)
         self.validator = CodeValidator()
         self.analyzer = CodeAnalyzer()
     
@@ -66,7 +66,7 @@ class VariantEvaluator:
         
         # 在沙箱中验证代码
         validation_results = self.validator.validate(
-            variant, tests, self.sandbox
+            variant, tests
         )
         
         # 分析代码质量
@@ -118,4 +118,39 @@ class VariantEvaluator:
             score += 0.1
             
         # 确保分数在0-1之间
-        return min(max(score, 0.0), 1.0) 
+        return min(max(score, 0.0), 1.0)
+
+    def evaluate_code(self, code: str) -> Dict[str, Any]:
+        """
+        评估代码
+        
+        Args:
+            code: 要评估的Python代码
+            
+        Returns:
+            Dict[str, Any]: 评估结果，包含：
+                - validation_results: 验证结果
+                - code_analysis: 代码分析结果
+                - execution_time: 执行时间
+                - overall_score: 总体评分
+        """
+        # 在沙箱中验证代码
+        validation_results = self.sandbox.execute_code(code)
+        # 分析代码质量
+        code_analysis = self.analyzer.analyze(code)
+        
+        # 计算执行时间
+        execution_time = validation_results.get('execution_time', 0)
+        # 计算总体评分
+        overall_score = self._calculate_overall_score(
+            validation_results,
+            code_analysis,
+            execution_time
+        )
+        
+        return {
+            'validation_results': validation_results,
+            'code_analysis': code_analysis,
+            'execution_time': execution_time,
+            'overall_score': overall_score
+        } 

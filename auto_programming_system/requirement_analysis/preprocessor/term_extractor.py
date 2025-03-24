@@ -548,4 +548,25 @@ class TermExtractor:
             'technical_terms': tech_terms,
             'term_count': len(tech_terms),
             'term_types': term_types
-        } 
+        }
+
+    def update_dictionary(self, dictionary: Dict[str, Any]) -> None:
+        """
+        Update the custom dictionary used for term extraction.
+        
+        Args:
+            dictionary: Dictionary containing custom terms and their metadata
+        """
+        self.custom_dictionary = dictionary
+
+    def extract_technical_terms(self, text: str) -> List[Dict[str, Any]]:
+        """
+        Extract technical terms from the input text (alias for extract method).
+        
+        Args:
+            text: Input text to extract terms from
+            
+        Returns:
+            List of extracted technical terms with their metadata
+        """
+        return self.extract(text) 

@@ -161,12 +161,26 @@ def test_full_agent():
         print(f"\n测试用例1 - 初始需求: {case['name']}")
         
         result = agent.analyze_requirement(case["requirement"])
+        if not isinstance(result, dict):
+            result = {}
         
         print("\n初始需求分析结果摘要:")
-        print(f"- 识别的领域: {result.get('domain_analysis', {}).get('primary_domain', '未知')}")
+        domain_analysis = result.get('domain_analysis', {})
+        if not isinstance(domain_analysis, dict):
+            domain_analysis = {}
+        print(f"- 识别的领域: {domain_analysis.get('primary_domain', '未知')}")
         print(f"- 当前对话阶段: {result.get('discussion_stage', '未知')}")
-        print(f"- 下一步问题数量: {len(result.get('next_questions', []))}")
-        print(f"- 缺失的方面: {', '.join(result.get('completeness_analysis', {}).get('missing_aspects', []))}")
+        next_questions = result.get('next_questions', [])
+        if not isinstance(next_questions, list):
+            next_questions = []
+        print(f"- 下一步问题数量: {len(next_questions)}")
+        completeness_analysis = result.get('completeness_analysis', {})
+        if not isinstance(completeness_analysis, dict):
+            completeness_analysis = {}
+        missing_aspects = completeness_analysis.get('missing_aspects', [])
+        if not isinstance(missing_aspects, list):
+            missing_aspects = []
+        print(f"- 缺失的方面: {', '.join(missing_aspects)}")
         
         # 测试用例2：多轮对话
         print("\n测试用例2 - 多轮对话")
@@ -180,21 +194,50 @@ def test_full_agent():
             "另外，我们需要一个产品搜索功能，可以按照价格区间和类别筛选。",
             discussion_history
         )
+        if not isinstance(result, dict):
+            result = {}
         
         print("\n多轮对话分析结果摘要:")
-        print(f"- 当前理解的需求长度: {len(result.get('current_understanding', ''))}")
-        print(f"- 识别的技术约束: {result.get('tech_analysis', {}).get('tech_recommendations', {}).keys()}")
+        current_understanding = result.get('current_understanding', '')
+        if not isinstance(current_understanding, str):
+            current_understanding = ''
+        print(f"- 当前理解的需求长度: {len(current_understanding)}")
+        tech_analysis = result.get('tech_analysis', {})
+        if not isinstance(tech_analysis, dict):
+            tech_analysis = {}
+        tech_recommendations = tech_analysis.get('tech_recommendations', {})
+        if not isinstance(tech_recommendations, dict):
+            tech_recommendations = {}
+        print(f"- 识别的技术约束: {list(tech_recommendations.keys())}")
+        next_steps = result.get('next_steps', [])
+        if not isinstance(next_steps, list):
+            next_steps = []
         print(f"- 下一步建议:")
-        for step in result.get('next_steps', []):
-            print(f"  * {step['description']}")
+        for step in next_steps:
+            if isinstance(step, dict):
+                print(f"  * {step.get('description', '未知步骤')}")
+            else:
+                print(f"  * {str(step)}")
             
         # 测试用例3：完整性检查
         print("\n测试用例3 - 完整性检查")
         completeness = result.get('completeness_analysis', {})
+        if not isinstance(completeness, dict):
+            completeness = {}
+        domain_clarity = completeness.get('domain_clarity', {})
+        if not isinstance(domain_clarity, dict):
+            domain_clarity = {}
+        requirement_coverage = completeness.get('requirement_coverage', {})
+        if not isinstance(requirement_coverage, dict):
+            requirement_coverage = {}
+        tech_decision_clarity = completeness.get('tech_decision_clarity', {})
+        if not isinstance(tech_decision_clarity, dict):
+            tech_decision_clarity = {}
+        
         print("\n完整性分析结果:")
-        print(f"- 领域清晰度: {'清晰' if completeness.get('domain_clarity', {}).get('is_clear') else '不清晰'}")
-        print(f"- 需求覆盖度: {'完整' if completeness.get('requirement_coverage', {}).get('is_complete') else '不完整'}")
-        print(f"- 技术决策清晰度: {'清晰' if completeness.get('tech_decision_clarity', {}).get('is_clear') else '不清晰'}")
+        print(f"- 领域清晰度: {'清晰' if domain_clarity.get('is_clear') else '不清晰'}")
+        print(f"- 需求覆盖度: {'完整' if requirement_coverage.get('is_complete') else '不完整'}")
+        print(f"- 技术决策清晰度: {'清晰' if tech_decision_clarity.get('is_clear') else '不清晰'}")
         
     except Exception as e:
         print(f"测试失败: {str(e)}")

@@ -1,0 +1,30 @@
+"""
+{{ function_docstring }}
+"""
+
+{% if imports %}
+{% for import_statement in imports %}
+{{ import_statement }}
+{% endfor %}
+{% endif %}
+
+def {{ function_name }}({% if params %}{{ params|join(', ') }}{% endif %}){% if return_type %} -> {{ return_type }}{% endif %}:
+    """
+    {{ function_description }}
+    
+    {% if params_docs %}
+    Args:
+        {% for param, desc in params_docs.items() %}
+        {{ param }}: {{ desc }}
+        {% endfor %}
+    {% endif %}
+    {% if return_desc %}
+    Returns:
+        {{ return_desc }}
+    {% endif %}
+    """
+    {% if body %}
+    {% for line in body %}
+    {{ line }}
+    {% endfor %}
+    {% endif %} 

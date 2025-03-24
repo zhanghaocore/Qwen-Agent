@@ -163,10 +163,18 @@ def test_full_agent():
         result = agent.analyze_requirement(case["requirement"])
         
         print("\n初始需求分析结果摘要:")
-        print(f"- 识别的领域: {result.get('domain_analysis', {}).get('primary_domain', '未知')}")
-        print(f"- 当前对话阶段: {result.get('discussion_stage', '未知')}")
-        print(f"- 下一步问题数量: {len(result.get('next_questions', []))}")
-        print(f"- 缺失的方面: {', '.join(result.get('completeness_analysis', {}).get('missing_aspects', []))}")
+        domain_analysis = result.get('domain_analysis') if isinstance(result, dict) else {}
+        if isinstance(domain_analysis, dict):
+            print(f"- 识别的领域: {domain_analysis.get('primary_domain', '未知')}")
+        else:
+            print("- 识别的领域: 未知")
+            
+        print(f"- 当前对话阶段: {result.get('discussion_stage', '未知') if isinstance(result, dict) else '未知'}")
+        print(f"- 下一步问题数量: {len(result.get('next_questions', [])) if isinstance(result, dict) else 0}")
+        
+        completeness_analysis = result.get('completeness_analysis') if isinstance(result, dict) else {}
+        missing_aspects = completeness_analysis.get('missing_aspects', []) if isinstance(completeness_analysis, dict) else []
+        print(f"- 缺失的方面: {', '.join(missing_aspects)}")
         
         # 测试用例2：多轮对话
         print("\n测试用例2 - 多轮对话")
@@ -182,19 +190,41 @@ def test_full_agent():
         )
         
         print("\n多轮对话分析结果摘要:")
-        print(f"- 当前理解的需求长度: {len(result.get('current_understanding', ''))}")
-        print(f"- 识别的技术约束: {result.get('tech_analysis', {}).get('tech_recommendations', {}).keys()}")
-        print(f"- 下一步建议:")
-        for step in result.get('next_steps', []):
-            print(f"  * {step['description']}")
+        if isinstance(result, dict):
+            current_understanding = result.get('current_understanding', '')
+            print(f"- 当前理解的需求长度: {len(current_understanding)}")
+            
+            tech_analysis = result.get('tech_analysis', {})
+            if isinstance(tech_analysis, dict):
+                tech_recommendations = tech_analysis.get('tech_recommendations', {})
+                if isinstance(tech_recommendations, dict):
+                    print(f"- 识别的技术约束: {list(tech_recommendations.keys())}")
+                else:
+                    print("- 识别的技术约束: []")
+            
+            print(f"- 下一步建议:")
+            next_steps = result.get('next_steps', [])
+            if isinstance(next_steps, list):
+                for step in next_steps:
+                    if isinstance(step, dict):
+                        print(f"  * {step.get('description', '')}")
             
         # 测试用例3：完整性检查
         print("\n测试用例3 - 完整性检查")
-        completeness = result.get('completeness_analysis', {})
-        print("\n完整性分析结果:")
-        print(f"- 领域清晰度: {'清晰' if completeness.get('domain_clarity', {}).get('is_clear') else '不清晰'}")
-        print(f"- 需求覆盖度: {'完整' if completeness.get('requirement_coverage', {}).get('is_complete') else '不完整'}")
-        print(f"- 技术决策清晰度: {'清晰' if completeness.get('tech_decision_clarity', {}).get('is_clear') else '不清晰'}")
+        if isinstance(result, dict):
+            completeness = result.get('completeness_analysis', {})
+            if isinstance(completeness, dict):
+                domain_clarity = completeness.get('domain_clarity', {})
+                requirement_coverage = completeness.get('requirement_coverage', {})
+                tech_decision_clarity = completeness.get('tech_decision_clarity', {})
+                
+                print("\n完整性分析结果:")
+                if isinstance(domain_clarity, dict):
+                    print(f"- 领域清晰度: {'清晰' if domain_clarity.get('is_clear') else '不清晰'}")
+                if isinstance(requirement_coverage, dict):
+                    print(f"- 需求覆盖度: {'完整' if requirement_coverage.get('is_complete') else '不完整'}")
+                if isinstance(tech_decision_clarity, dict):
+                    print(f"- 技术决策清晰度: {'清晰' if tech_decision_clarity.get('is_clear') else '不清晰'}")
         
     except Exception as e:
         print(f"测试失败: {str(e)}")

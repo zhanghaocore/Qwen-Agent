@@ -148,7 +148,7 @@ class TestTextPreprocessor(unittest.TestCase):
         """测试转字典功能是否正常工作"""
         text = "测试文本"
         processed = self.preprocessor.preprocess(text)
-        result = self.preprocessor.to_dict(processed)
+        result = processed.to_dict()
         # 验证返回字典包含预期的键
         self.assertIn('original_text', result)
         self.assertIn('cleaned_text', result)

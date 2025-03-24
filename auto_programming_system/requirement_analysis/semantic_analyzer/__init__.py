@@ -4,9 +4,9 @@
 该模块负责从预处理文本中提取语义信息，包括意图分类、实体识别和关系提取。
 """
 
-from .semantic_analyzer import SemanticAnalyzer
+from .analyzer import SemanticAnalyzer
 from .parameter_extractor import ParameterExtractor
-from .type_inference_system import TypeInferenceSystem
+from .type_inference import TypeInferenceSystem
 from .requirement_analyzer import RequirementAnalyzer
 
 __all__ = [

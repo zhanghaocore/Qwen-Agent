@@ -1,7 +1,5 @@
 """
-文本规范化器
-
-负责文本格式的标准化处理，包括数字、日期、时间和缩写的标准化。
+Text normalization utility module.
 """
 
 import re
@@ -10,16 +8,7 @@ from datetime import datetime
 
 
 class TextNormalizer:
-    """
-    文本规范化器类，用于标准化文本格式。
-    
-    功能包括：
-    - 数字格式标准化
-    - 日期格式标准化
-    - 时间格式标准化
-    - 缩写展开
-    - 大小写规范化
-    """
+    """Text normalization utility class."""
     
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
@@ -71,7 +60,24 @@ class TextNormalizer:
             'pct.': 'percent',
             'qty.': 'quantity',
             'temp.': 'temperature',
-            'vol.': 'volume'
+            'vol.': 'volume',
+            'API': 'Application Programming Interface',
+            'REST': 'Representational State Transfer',
+            'HTTP': 'Hypertext Transfer Protocol',
+            'HTTPS': 'Hypertext Transfer Protocol Secure',
+            'SQL': 'Structured Query Language',
+            'JSON': 'JavaScript Object Notation',
+            'XML': 'Extensible Markup Language',
+            'HTML': 'Hypertext Markup Language',
+            'CSS': 'Cascading Style Sheets',
+            'JS': 'JavaScript',
+            'DB': 'Database',
+            'UI': 'User Interface',
+            'UX': 'User Experience',
+            'IDE': 'Integrated Development Environment',
+            'SDK': 'Software Development Kit',
+            'JWT': 'JSON Web Token',
+            'OAuth': 'Open Authorization'
         }
     
     def normalize(self, text: str) -> str:
@@ -106,22 +112,99 @@ class TextNormalizer:
         return normalized_text
     
     def _normalize_numbers(self, text: str) -> str:
-        """将数字格式标准化。"""
-        def replace_number(match):
-            number_str = match.group(0)
-            # 移除千位分隔符
-            number_str = number_str.replace(',', '')
-            try:
-                number = float(number_str)
-                # 整数和小数处理
-                if number.is_integer():
-                    return str(int(number))
-                else:
-                    return str(number)
-            except ValueError:
-                return number_str
+        """
+        将数字格式标准化。
         
+        Args:
+            text: 输入文本
+            
+        Returns:
+            标准化后的文本
+        """
+        def replace_number(match):
+            number = match.group(0)
+            # 移除千位分隔符
+            number = number.replace(',', '')
+            # 确保小数点格式一致
+            if '.' in number:
+                integer_part, decimal_part = number.split('.')
+                return f"{integer_part}.{decimal_part}"
+            return number
+            
         return self.number_pattern.sub(replace_number, text)
+    
+    def _expand_abbreviations(self, text: str) -> str:
+        """
+        展开文本中的缩写。
+        
+        Args:
+            text: 输入文本
+            
+        Returns:
+            展开缩写后的文本
+        """
+        expanded_text = text
+        for abbr, full_form in self.abbreviations.items():
+            # 使用单词边界确保只替换完整的缩写词
+            pattern = r'\b' + re.escape(abbr) + r'\b'
+            expanded_text = re.sub(pattern, full_form, expanded_text)
+        return expanded_text
+    
+    def normalize_dates(self, text: str) -> str:
+        """
+        Normalize dates in the text to a standard format.
+        
+        Args:
+            text: Input text containing dates
+            
+        Returns:
+            Text with normalized dates
+        """
+        # Convert common date formats to ISO format
+        date_patterns = [
+            (r'(\d{1,2})/(\d{1,2})/(\d{2,4})', r'\3-\1-\2'),
+            (r'(\d{1,2})-(\d{1,2})-(\d{2,4})', r'\3-\1-\2'),
+            (r'(\d{1,2})\.(\d{1,2})\.(\d{2,4})', r'\3-\1-\2')
+        ]
+        
+        for pattern, replacement in date_patterns:
+            text = re.sub(pattern, replacement, text)
+            
+        return text
+    
+    def normalize_times(self, text: str) -> str:
+        """
+        Normalize times in the text to a standard format.
+        
+        Args:
+            text: Input text containing times
+            
+        Returns:
+            Text with normalized times
+        """
+        # Convert common time formats to 24-hour format
+        time_patterns = [
+            (r'(\d{1,2}):(\d{2})\s*(AM|PM)', lambda m: self._convert_12h_to_24h(m)),
+            (r'(\d{1,2})\.(\d{2})\s*(AM|PM)', lambda m: self._convert_12h_to_24h(m))
+        ]
+        
+        for pattern, replacement in time_patterns:
+            text = re.sub(pattern, replacement, text)
+            
+        return text
+    
+    def _convert_12h_to_24h(self, match) -> str:
+        """Helper method to convert 12-hour time format to 24-hour format."""
+        hour = int(match.group(1))
+        minute = match.group(2)
+        period = match.group(3)
+        
+        if period == 'PM' and hour != 12:
+            hour += 12
+        elif period == 'AM' and hour == 12:
+            hour = 0
+            
+        return f'{hour:02d}:{minute}'
     
     def _normalize_dates(self, text: str) -> str:
         """将日期格式标准化为ISO格式(YYYY-MM-DD)。"""
@@ -218,15 +301,6 @@ class TextNormalizer:
         
         return self.time_pattern.sub(replace_time, text)
     
-    def _expand_abbreviations(self, text: str) -> str:
-        """展开文本中的缩写。"""
-        for abbr, expansion in self.abbreviations.items():
-            # 使用单词边界确保只替换完整的缩写
-            pattern = r'\b' + re.escape(abbr) + r'\b'
-            text = re.sub(pattern, expansion, text)
-        
-        return text
-    
     def normalize_text_case(self, text: str) -> str:
         """
         规范化文本大小写，技术术语保持原样
@@ -294,4 +368,28 @@ class TextNormalizer:
             'original_text': text,
             'normalized_text': normalized_text,
             'normalization_applied': text != normalized_text
-        } 
+        }
+
+    def normalize_numbers(self, text: str) -> str:
+        """
+        将数字格式标准化。
+        
+        Args:
+            text: 输入文本
+            
+        Returns:
+            标准化后的文本
+        """
+        return self._normalize_numbers(text)
+    
+    def expand_abbreviations(self, text: str) -> str:
+        """
+        展开文本中的缩写。
+        
+        Args:
+            text: 输入文本
+            
+        Returns:
+            展开缩写后的文本
+        """
+        return self._expand_abbreviations(text) 

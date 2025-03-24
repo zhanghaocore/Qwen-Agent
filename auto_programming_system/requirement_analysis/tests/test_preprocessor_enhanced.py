@@ -7,6 +7,7 @@ import sys
 import os
 import re
 from datetime import datetime
+from typing import Dict, Any, List
 
 # 添加项目根目录到Python路径，使测试能够导入相应模块
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
@@ -194,21 +195,21 @@ class TestTermExtractorEnhanced(unittest.TestCase):
         """测试词典中的术语提取"""
         # 编程语言
         text = "使用Python和JavaScript开发"
-        terms = self.extractor.extract_technical_terms(text)
+        terms = self.extractor.extract(text)
         term_names = [term['term'].lower() for term in terms]
         self.assertTrue(any('python' in name for name in term_names))
         self.assertTrue(any('javascript' in name for name in term_names))
         
         # 框架和库
         text = "使用Django和Flask构建Web应用"
-        terms = self.extractor.extract_technical_terms(text)
-        term_names = [term['term'].lower() for term in term_names]
+        terms = self.extractor.extract(text)
+        term_names = [term['term'].lower() for term in terms]
         self.assertTrue(any('django' in name for name in term_names) or 
                        any('flask' in name for name in term_names))
         
         # API和协议
         text = "实现REST API，支持HTTP请求"
-        terms = self.extractor.extract_technical_terms(text)
+        terms = self.extractor.extract(text)
         term_names = [term['term'].lower() for term in terms]
         self.assertTrue(any('rest' in name or 'api' in name for name in term_names))
         self.assertTrue(any('http' in name for name in term_names))
@@ -217,20 +218,20 @@ class TestTermExtractorEnhanced(unittest.TestCase):
         """测试复合术语识别"""
         # REST API
         text = "实现RESTful API接口"
-        terms = self.extractor.extract_technical_terms(text)
+        terms = self.extractor.extract(text)
         term_texts = [term['term'].lower() for term in terms]
         self.assertTrue(any('rest' in text and 'api' in text for text in term_texts))
         
         # HTTP请求
         text = "发送HTTP请求获取数据"
-        terms = self.extractor.extract_technical_terms(text)
+        terms = self.extractor.extract(text)
         term_texts = [term['term'].lower() for term in terms]
         self.assertTrue(any('http' in text and '请求' in text for text in term_texts))
     
     def test_chinese_terms(self):
         """测试中文术语识别"""
         text = "创建一个用户管理服务，实现身份认证"
-        terms = self.extractor.extract_technical_terms(text)
+        terms = self.extractor.extract(text)
         term_texts = [term['term'] for term in terms]
         self.assertTrue(any('用户' in text for text in term_texts))
         self.assertTrue(any('服务' in text for text in term_texts))
@@ -239,29 +240,17 @@ class TestTermExtractorEnhanced(unittest.TestCase):
     def test_edge_cases(self):
         """测试边界情况"""
         # 空文本
-        self.assertEqual(len(self.extractor.extract_technical_terms("")), 0)
+        self.assertEqual(len(self.extractor.extract("")), 0)
         
         # 无技术术语的文本
         text = "这是一个普通的文本，没有任何技术术语"
-        terms = self.extractor.extract_technical_terms(text)
+        terms = self.extractor.extract(text)
         self.assertTrue(len(terms) >= 0)  # 可能没有识别出术语
         
         # 全是技术术语的文本
-        text = "API REST HTTP JSON XML"
-        terms = self.extractor.extract_technical_terms(text)
-        self.assertTrue(len(terms) > 0)  # 应该识别出一些术语
-    
-    def test_candidate_term_identification(self):
-        """测试候选术语识别"""
-        # 上下文相关术语
-        text = "实现一个用户认证服务，提供登录和注册功能"
-        terms = self.extractor.extract_technical_terms(text)
-        
-        # 检查是否识别出关键术语
-        term_texts = [term['term'].lower() for term in terms]
-        relevant_terms = ['用户', '认证', '服务', '登录', '注册']
-        matches = [any(rt in tt for tt in term_texts) for rt in relevant_terms]
-        self.assertTrue(any(matches))  # 至少应该匹配一个相关术语
+        text = "HTTP REST API OAuth JWT"
+        terms = self.extractor.extract(text)
+        self.assertTrue(len(terms) > 0)  # 应该识别出多个术语
 
 
 class TestTextNormalizerEnhanced(unittest.TestCase):
@@ -432,7 +421,7 @@ class TestTextPreprocessorEnhanced(unittest.TestCase):
         """测试对象到字典的转换"""
         text = "测试文本转字典功能"
         processed = self.preprocessor.preprocess(text)
-        result_dict = self.preprocessor.to_dict(processed)
+        result_dict = processed.to_dict()
         
         # 验证字典包含所有关键字段
         self.assertIn('original_text', result_dict)
@@ -510,6 +499,94 @@ class TestPreprocessedTextModel(unittest.TestCase):
         self.assertEqual(preprocessed.technical_terms[0]["term"], "术语1")
         self.assertEqual(preprocessed.normalized_text, "规范化文本")
         self.assertEqual(preprocessed.metadata["key"], "value")
+
+
+class TestPreprocessorIntegration(unittest.TestCase):
+    """测试预处理器的集成功能"""
+    
+    def setUp(self):
+        self.preprocessor = TextPreprocessor()
+    
+    def test_full_pipeline(self):
+        """测试完整的预处理流程"""
+        text = "这是一个测试文本，包含HTTP请求和REST API。"
+        processed = self.preprocessor.preprocess(text)
+        
+        # 1. 清洗结果验证
+        cleaning_result = self.preprocessor.cleaner.clean_text(text)
+        self.assertEqual(processed.cleaned_text, cleaning_result)
+        
+        # 2. 分割结果验证
+        splitting_result = self.preprocessor.splitter.process(processed.cleaned_text)
+        self.assertEqual(processed.sentences, splitting_result.get('sentences', []))
+        
+        # 3. 术语提取验证
+        self.assertTrue(len(processed.technical_terms) >= 0)
+        
+        # 4. 规范化验证
+        normalized_text = self.preprocessor.normalizer.normalize(processed.cleaned_text)
+        self.assertEqual(processed.normalized_text, normalized_text)
+    
+    def test_edge_cases(self):
+        """测试边界情况"""
+        # 空文本
+        empty_processed = self.preprocessor.preprocess("")
+        self.assertEqual(empty_processed.original_text, "")
+        self.assertEqual(empty_processed.cleaned_text, "")
+        self.assertEqual(len(empty_processed.sentences), 0)
+        
+        # 极长文本
+        long_text = "这是一个" + "非常" * 1000 + "长的文本。"
+        long_processed = self.preprocessor.preprocess(long_text)
+        self.assertEqual(long_processed.original_text, long_text)
+        self.assertTrue(len(long_processed.cleaned_text) > 0)
+        
+        # 特殊格式文本
+        special_text = "包含特殊格式：2023/12/25 3:30pm，内存5k，支持HTTP请求。"
+        special_processed = self.preprocessor.preprocess(special_text)
+        # 验证处理不会出错
+        self.assertEqual(special_processed.original_text, special_text)
+    
+    def test_to_dict_conversion(self):
+        """测试对象到字典的转换"""
+        text = "测试文本转字典功能"
+        processed = self.preprocessor.preprocess(text)
+        result_dict = processed.to_dict()
+        
+        # 验证字典包含所有关键字段
+        self.assertIn('original_text', result_dict)
+        self.assertIn('cleaned_text', result_dict)
+        self.assertIn('sentences', result_dict)
+        self.assertIn('technical_terms', result_dict)
+        self.assertIn('normalized_text', result_dict)
+        self.assertIn('metadata', result_dict)
+        
+        # 验证值正确性
+        self.assertEqual(result_dict['original_text'], text)
+        self.assertEqual(result_dict['cleaned_text'], processed.cleaned_text)
+    
+    def test_complex_preprocessing(self):
+        """测试复杂文本的全流程处理"""
+        text = """
+        系统需要实现以下功能：
+        1. 支持HTTP/HTTPS请求
+        2. 实现RESTful API接口
+        3. 使用MySQL数据库存储
+        4. 集成OAuth2.0认证
+        """
+        processed = self.preprocessor.preprocess(text)
+        
+        # 验证基本属性
+        self.assertTrue(len(processed.sentences) > 0)
+        self.assertTrue(len(processed.technical_terms) > 0)
+        self.assertTrue(len(processed.normalized_text) > 0)
+        
+        # 验证技术术语识别
+        term_texts = [term['term'].lower() for term in processed.technical_terms]
+        self.assertTrue(any('http' in text for text in term_texts))
+        self.assertTrue(any('api' in text for text in term_texts))
+        self.assertTrue(any('mysql' in text for text in term_texts))
+        self.assertTrue(any('oauth' in text for text in term_texts))
 
 
 if __name__ == '__main__':

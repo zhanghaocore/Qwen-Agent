@@ -55,6 +55,8 @@ def debug_jinja_template():
         template = jinja_env.get_template("functions/basic_function.py.jinja")
         
         # 提取模板源码中的条件判断部分
+        if jinja_env.loader is None:
+            raise ValueError("Template loader is not initialized")
         template_source = jinja_env.loader.get_source(jinja_env, "functions/basic_function.py.jinja")[0]
         
         # 查找关键条件判断
