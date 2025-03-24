@@ -250,15 +250,16 @@ class SemanticAnalyzer:
         
         # 处理可能的参数组合，比如"整数和字符串"
         expanded_params = []
+        merged_params = []  # 初始化 merged_params 列表
+        current_param = None
+        
         for param in params:
             if any(type_text in param for type_text in self.data_type_patterns.keys()):
-                if 'current_param' in locals() and current_param:
-                    if 'merged_params' not in locals():
-                        merged_params = []
+                if current_param:
                     merged_params.append(current_param)
                 current_param = param
             else:
-                if 'current_param' in locals() and current_param:
+                if current_param:
                     current_param += param
                 else:
                     current_param = param
@@ -266,27 +267,10 @@ class SemanticAnalyzer:
         if current_param:
             merged_params.append(current_param)
         
-        # 处理合并后的参数
-        processed_types = set()  # 初始化已处理类型的集合
+        # 处理每个参数
         for param in merged_params:
-            if not param.strip():
-                continue
-                
-            # 检查是否包含数据类型关键词
-            found_type = False
-            for type_text, type_str in self.data_type_patterns.items():
-                if type_text in param and type_text not in processed_types:
-                    # 使用完整的参数文本作为描述
-                    self._add_parameter(param, result)
-                    processed_types.add(type_text)
-                    found_type = True
-                    break
-            
-            # 如果没有找到类型关键词，将整个参数文本作为一个参数
-            if not found_type and param not in processed_types:
-                self._add_parameter(param, result)
-                processed_types.add(param)
-                
+            self._add_parameter(param, result)
+    
     def _add_parameter(self, param_text: str, result: Dict[str, Any]) -> None:
         """添加单个参数到结果字典"""
         # 检查是否已经添加该参数

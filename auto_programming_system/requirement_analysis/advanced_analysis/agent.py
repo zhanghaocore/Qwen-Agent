@@ -11,44 +11,49 @@ import sys
 # 添加项目根目录到路径，以便导入项目内模块
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
+# 定义基类和工具
+class FnCallAgent:
+    """简化版Agent基类"""
+    def __init__(self, function_list=None, llm=None, system_message=None, name=None, description=None, **kwargs):
+        self.function_list = function_list or []
+        self.llm_config = llm
+        self.system_message = system_message
+        self.name = name
+        self.description = description
+        
+    def run(self, messages):
+        """模拟Agent运行"""
+        yield [{"role": "assistant", "content": "请安装qwen_agent以使用完整功能"}]
+
+class BaseTool:
+    """简化版工具基类"""
+    def __init__(self):
+        self.function = {"name": self.__class__.__name__}
+        
+def register_tool(name):
+    """模拟装饰器"""
+    def decorator(cls):
+        return cls
+    return decorator
+
 try:
     # 尝试导入qwen_agent相关模块
     from qwen_agent.agents.fncall_agent import FnCallAgent as QwenFnCallAgent
     from qwen_agent.llm import BaseChatModel
     from qwen_agent.llm.schema import ASSISTANT, DEFAULT_SYSTEM_MESSAGE, USER, Message
-    from qwen_agent.tools.base import BaseTool as QwenBaseTool, register_tool
+    from qwen_agent.tools.base import BaseTool as QwenBaseTool, register_tool as qwen_register_tool
 
     # 标记是否使用qwen_agent
     USE_QWEN_AGENT = True
+    
+    # 如果成功导入，使用Qwen的类
+    globals()['FnCallAgent'] = QwenFnCallAgent
+    globals()['BaseTool'] = QwenBaseTool
+    globals()['register_tool'] = qwen_register_tool
 except ImportError:
     # 如果qwen_agent不可用，使用简化版Agent基类
     print("Qwen-Agent不可用，使用简化版Agent实现")
     USE_QWEN_AGENT = False
-    
-    # 定义简化版基类和工具
-    class FnCallAgent:
-        """简化版Agent基类"""
-        def __init__(self, function_list=None, llm=None, system_message=None, name=None, description=None, **kwargs):
-            self.function_list = function_list or []
-            self.llm_config = llm
-            self.system_message = system_message
-            self.name = name
-            self.description = description
-            
-        def run(self, messages):
-            """模拟Agent运行"""
-            yield [{"role": "assistant", "content": "请安装qwen_agent以使用完整功能"}]
-    
-    class BaseTool:
-        """简化版工具基类"""
-        def __init__(self):
-            self.function = {"name": self.__class__.__name__}
-            
-    def register_tool(name):
-        """模拟装饰器"""
-        def decorator(cls):
-            return cls
-        return decorator
 
 # 导入工具类
 from .tools import (
