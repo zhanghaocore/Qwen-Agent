@@ -3,7 +3,7 @@
 负责分析预处理后的需求文本，提取关键概念和关系
 """
 
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional, Tuple, Set
 import re
 
 
@@ -130,7 +130,7 @@ class SemanticAnalyzer:
             r'\b(不|非|not)\b': "not_operator",
         }
     
-    def analyze(self, text: str, original_text: str = None) -> Dict[str, Any]:
+    def analyze(self, text: str, original_text: Optional[str] = None) -> Dict[str, Any]:
         """
         分析预处理后的文本，提取语义信息
         
@@ -252,11 +252,13 @@ class SemanticAnalyzer:
         expanded_params = []
         for param in params:
             if any(type_text in param for type_text in self.data_type_patterns.keys()):
-                if current_param:
+                if 'current_param' in locals() and current_param:
+                    if 'merged_params' not in locals():
+                        merged_params = []
                     merged_params.append(current_param)
                 current_param = param
             else:
-                if current_param:
+                if 'current_param' in locals() and current_param:
                     current_param += param
                 else:
                     current_param = param
@@ -265,6 +267,7 @@ class SemanticAnalyzer:
             merged_params.append(current_param)
         
         # 处理合并后的参数
+        processed_types = set()  # 初始化已处理类型的集合
         for param in merged_params:
             if not param.strip():
                 continue

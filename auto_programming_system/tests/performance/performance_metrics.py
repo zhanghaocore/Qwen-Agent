@@ -138,7 +138,7 @@ class MetricsCollector:
         self.start_time = time.time()
         self.start_memory = self._get_current_memory()
 
-    def end_collection(self, additional_metrics: Dict[str, Any] = None):
+    def end_collection(self, additional_metrics: Optional[Dict[str, Any]] = None):
         """End metrics collection and record results."""
         end_time = time.time()
         end_memory = self._get_current_memory()

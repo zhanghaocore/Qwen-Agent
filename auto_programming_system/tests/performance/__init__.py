@@ -8,7 +8,7 @@ auto programming system, including benchmarking tools and metrics collection.
 import time
 import psutil
 import statistics
-from typing import Callable, Any, List, Dict
+from typing import Callable, Any, List, Dict, Optional, Union
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -20,7 +20,7 @@ class PerformanceMetrics:
     cpu_usage: float      # percentage
     test_name: str
     timestamp: float
-    additional_metrics: Dict[str, Any] = None
+    additional_metrics: Optional[Dict[str, Any]] = None
 
 def measure_execution_time(func: Callable) -> Callable:
     """Decorator to measure function execution time."""

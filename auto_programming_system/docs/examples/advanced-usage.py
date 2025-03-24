@@ -209,6 +209,7 @@ def custom_sandbox_execution():
     try:
         # 创建测试CSV
         with open("test_data.csv", "w") as f:
+            import numpy as np
             f.write("x,y,z\n")
             for i in range(100):
                 f.write(f"{np.random.random()},{np.random.random()},{np.random.random()}\n")

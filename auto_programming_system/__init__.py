@@ -28,7 +28,7 @@ class AutoProgrammingSystem:
         self.validator = CodeValidator(security_level=security_level)
         self.optimizer = CodeOptimizer()
     
-    def process(self, text: str, constraints: list = None) -> dict:
+    def process(self, text: str, constraints: list = []) -> dict:
         """
         处理自然语言需求，生成代码
         

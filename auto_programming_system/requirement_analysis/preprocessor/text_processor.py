@@ -73,7 +73,7 @@ class PreprocessedText:
         return json.dumps(serializable_dict, ensure_ascii=False, indent=2)
 
 
-class TextPreprocessor:
+class TextProcessor:
     """
     文本预处理器类
     整合文本清洗、句子分割、术语识别和文本规范化功能

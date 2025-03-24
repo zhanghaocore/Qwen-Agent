@@ -65,7 +65,7 @@ class VariantEvaluator:
         start_time = time.time()
         
         # 在沙箱中验证代码
-        validation_results = self.validator.validate_in_sandbox(
+        validation_results = self.validator.validate(
             variant, tests, self.sandbox
         )
         

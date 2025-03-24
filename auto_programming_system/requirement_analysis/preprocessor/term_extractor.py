@@ -440,7 +440,7 @@ class TermExtractor:
         
         return candidates
     
-    def extract_technical_terms(self, text: str) -> List[Dict[str, Any]]:
+    def extract(self, text: str) -> List[Dict[str, Any]]:
         """
         从文本中提取技术术语
         
@@ -448,7 +448,7 @@ class TermExtractor:
             text: 输入文本
             
         Returns:
-            识别的技术术语列表
+            包含提取的技术术语的列表，每个术语包含term、type和confidence信息
         """
         if not text:
             return []
@@ -532,7 +532,7 @@ class TermExtractor:
         Returns:
             包含提取结果的字典
         """
-        tech_terms = self.extract_technical_terms(text)
+        tech_terms = self.extract(text)
         
         # 按置信度排序
         tech_terms.sort(key=lambda x: x.get('confidence', 0), reverse=True)

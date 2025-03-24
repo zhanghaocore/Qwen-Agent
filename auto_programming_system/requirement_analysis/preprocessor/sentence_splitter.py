@@ -1,41 +1,92 @@
 """
-句子分割模块
-负责将文本分割为语义完整的句子
+句子分割器
+
+负责将文本分割为语义完整的句子。
 """
+
 import re
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 
 class SentenceSplitter:
-    """句子分割类，将文本分割为语义完整的句子"""
+    """
+    句子分割器类，用于将文本分割为语义完整的句子。
     
-    def __init__(self):
-        # 基本句子边界正则 - 修复正则表达式以改进句子分割
-        # 针对中文和英文分别处理
-        self.sentence_boundary_en = re.compile(r'(?<=[.!?])\s+')
-        self.sentence_boundary_cn = re.compile(r'(?<=[。！？])')
+    功能包括：
+    - 基于标点符号的句子分割
+    - 列表项处理
+    - 特殊标点和缩写处理
+    - 多语言支持（英文和中文）
+    """
+    
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
+        """
+        初始化句子分割器。
         
-        # 技术术语和缩写字典，避免错误分割
-        self.abbreviations = {
-            'e.g.': True, 'i.e.': True, 'etc.': True,
-            'vs.': True, 'Mr.': True, 'Mrs.': True,
-            'Dr.': True, 'Prof.': True, 'Fig.': True,
-            'v.': True, 'et al.': True, 'No.': True,
-            'Inc.': True, 'Ltd.': True, 'Co.': True,
-            'St.': True, 'Ave.': True, 'Jan.': True,
-            'Feb.': True, 'Mar.': True, 'Apr.': True,
-            'Jun.': True, 'Jul.': True, 'Aug.': True,
-            'Sep.': True, 'Oct.': True, 'Nov.': True,
-            'Dec.': True, 'a.m.': True, 'p.m.': True,
-        }
+        参数:
+            config: 可选的配置参数字典
+        """
+        self.config = config or {}
+        self._init_patterns()
+    
+    def _init_patterns(self):
+        """初始化正则表达式模式。"""
+        # 英文句子分割模式
+        self.eng_sentence_pattern = re.compile(
+            r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|!)\s'
+        )
         
-        # 列表项模式 (例如：1. 项目 2. 项目)
-        self.list_item_pattern = re.compile(r'(\d+\.\s+|\*\s+|[\-•]\s+)')
+        # 中文句子分割模式
+        self.chn_sentence_pattern = re.compile(
+            r'(?<=[。！？；])'
+        )
         
-        # 修复复杂句子结构的正则表达式，确保空格处理一致性
-        # 改进：确保句末标点后接新句子时空格处理一致，同时处理中英文标点
-        self.complex_boundary = re.compile(r'(?<=[.!?。！？])(?:\s*)(?=[A-Z\u4e00-\u9fff])')
+        # 列表项模式
+        self.list_item_pattern = re.compile(
+            r'\n\s*[-*]\s+|\n\s*\d+\.\s+'
+        )
+    
+    def split(self, text: str) -> List[str]:
+        """
+        将文本分割为句子。
         
+        参数:
+            text: 输入文本
+            
+        返回:
+            句子列表
+        """
+        if not text:
+            return []
+        
+        # 处理换行
+        text = re.sub(r'\n{2,}', '\n', text)
+        
+        # 预处理列表项
+        list_items = self.list_item_pattern.findall(text)
+        for item in list_items:
+            text = text.replace(item, ' __LIST_ITEM__ ')
+        
+        # 分割英文句子
+        sentences = self.eng_sentence_pattern.split(text)
+        
+        # 进一步处理中文句子
+        result = []
+        for sentence in sentences:
+            if re.search('[\u4e00-\u9fff]', sentence):  # 包含中文字符
+                chinese_sentences = self.chn_sentence_pattern.split(sentence)
+                result.extend([s.strip() for s in chinese_sentences if s.strip()])
+            else:
+                result.append(sentence.strip())
+        
+        # 处理列表项
+        result = [re.sub(r'__LIST_ITEM__', '', s).strip() for s in result]
+        
+        # 移除空字符串
+        result = [s for s in result if s]
+        
+        return result
+    
     def contains_abbreviation(self, segment: str) -> bool:
         """
         检查文本片段是否包含常见缩写
@@ -46,7 +97,7 @@ class SentenceSplitter:
         Returns:
             如果包含缩写返回True，否则返回False
         """
-        for abbr in self.abbreviations:
+        for abbr in self.config.get('abbreviations', {}):
             if abbr in segment:
                 return True
         return False
@@ -65,7 +116,7 @@ class SentenceSplitter:
         temp_segment = segment
         abbr_markers = {}
         
-        for i, abbr in enumerate(self.abbreviations):
+        for i, abbr in enumerate(self.config.get('abbreviations', {})):
             if abbr in segment:
                 marker = f"__ABBR_{i}__"
                 abbr_markers[marker] = abbr
@@ -208,7 +259,7 @@ class SentenceSplitter:
         
         # 首先按照复杂边界进行分割
         # 改进：对中英文标点分别处理，确保空格一致性
-        segments = self.complex_boundary.split(cleaned_text)
+        segments = self.config.get('complex_boundary', re.compile(r'(?<=[.!?。！？])(?:\s*)(?=[A-Z\u4e00-\u9fff])')).split(cleaned_text)
         
         # 进一步处理每个分段
         for segment in segments:
