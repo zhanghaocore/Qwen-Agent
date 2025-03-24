@@ -1,489 +1,381 @@
-# 高级需求分析模块
+# 高级需求分析设计
 
-## 需求分析的挑战
+## 1. 概述
 
-自动化编程系统在分析用户需求时面临着显著挑战，尤其是处理表面简单但内涵丰富的需求描述时。以"创建一个智能问答系统"这样的简单需求为例，背后隐藏着大量未明确表述的工程与业务需求：
+高级需求分析模块通过集成 Qwen-Agent，实现了更智能的需求理解和分析能力。该模块能够通过多轮对话深入理解用户需求，提供技术决策支持，并生成高质量的规范文档。
 
-1. **用户身份与场景**：目标用户是谁？使用场景是什么？
-2. **领域特定需求**：问答系统针对哪个知识领域？
-3. **技术规模要求**：用户活跃量预期？需要多少计算资源？
-4. **部署范围**：需要前后端、移动端、APP等多端开发吗？
-5. **地域与合规**：系统在哪些国家使用？涉及什么政策约束？
-6. **扩展性考虑**：未来需要扩展哪些功能？
-7. **技术栈选择**：使用什么编程语言、框架、数据库和模型？
-8. **性能平衡**：如何平衡准确度和响应速度？
+## 2. 核心功能
 
-同样，在架构设计层面，LLM生成的方案往往缺乏足够的技术细节：
+### 2.1 智能对话式需求分析
 
-1. **框架具体化**：提到使用Python做后端，但未指定REST API框架
-2. **实现细节**：提到使用缓存提高响应速度，但未指定缓存框架
-3. **并发处理**：未详细说明多线程策略、线程池配置等
+1. **多轮对话理解**
+   - 基于 Qwen-Agent 的对话管理
+   - 上下文感知的问题生成
+   - 渐进式需求挖掘
+   - 需求完整性验证
 
-## 多层次需求挖掘框架
+2. **需求澄清机制**
+   - 自动识别模糊点
+   - 生成针对性问题
+   - 跟踪需求变更
+   - 维护需求一致性
 
-为解决上述挑战，我们设计了一个多层次需求挖掘框架，作为高级需求分析模块的核心组件。
+### 2.2 深度技术分析
 
-### 结构化问题分解模型
+1. **技术栈评估**
+   - 自动识别技术约束
+   - 分析可行性
+   - 推荐最佳实践
+   - 评估实现复杂度
 
-```mermaid
-graph TD
-    A[初始需求输入] --> B[领域分类预处理]
-    B --> C[领域特定问题库检索]
-    C --> D[一级关键问题生成]
-    D --> E[用户反馈收集]
-    E --> F[二级问题动态生成]
-    F --> G[技术细节问题展开]
-    G --> H[完整需求规范形成]
-```
+2. **架构决策支持**
+   - 架构模式匹配
+   - 组件关系分析
+   - 性能考虑建议
+   - 可扩展性评估
 
-该模型包含以下核心组件：
+### 2.3 智能规范生成
 
-1. **领域分类器**：将初始需求自动映射到预定义的应用领域（如问答系统、电商平台等）
-2. **问题库管理器**：维护按领域组织的问题集，覆盖业务、功能和技术各层面
-3. **动态问题生成器**：基于前序问题的回答动态生成后续问题
-4. **需求完整性评估器**：评估当前需求细节的完整性，确定是否需要进一步询问
+1. **自适应规范模板**
+   - 基于领域的模板选择
+   - 动态规范结构
+   - 自动补充细节
+   - 一致性检查
 
-### 渐进式技术决策流程
+2. **质量保证**
+   - 完整性验证
+   - 冲突检测
+   - 最佳实践符合度
+   - 可测试性分析
+
+## 3. 技术实现
+
+### 3.1 需求理解代理
 
 ```python
-class TechDecisionProcess:
+class RequirementUnderstandingAgent:
     def __init__(self):
-        self.tech_dependency_graph = self._load_dependency_graph()
-        self.decision_points = {}
-        self.reasoning_records = {}
-    
-    def analyze_tech_requirements(self, requirement_spec):
-        """分析需求规范，提取技术决策点"""
-        domains = self._identify_tech_domains(requirement_spec)
-        for domain in domains:
-            self.decision_points[domain] = self._extract_decision_points(domain)
-        return self.decision_points
-    
-    def generate_options(self, decision_point):
-        """为特定决策点生成技术选项及其权衡分析"""
-        context = self._get_decision_context(decision_point)
-        options = self._query_tech_options(decision_point, context)
-        analysis = self._generate_tradeoff_analysis(options, context)
-        return {"options": options, "analysis": analysis}
-    
-    def record_decision(self, decision_point, selected_option, reasoning):
-        """记录技术决策及其理由"""
-        self.reasoning_records[decision_point] = {
-            "selected": selected_option,
-            "reasoning": reasoning
-        }
-        # 更新依赖图中的后续决策点
-        self._update_dependent_decisions(decision_point, selected_option)
+        self.qwen_agent = QwenAgent(model="requirement_analysis")
+        self.context_manager = ContextManager()
+        self.knowledge_base = KnowledgeBase()
+
+    async def analyze_requirement(self, text: str) -> Dict[str, Any]:
+        """深度需求分析"""
+        # 初始理解
+        understanding = await self.qwen_agent.understand(text)
+        
+        # 需求澄清
+        clarification_needed = self.identify_unclear_points(understanding)
+        if clarification_needed:
+            questions = await self.generate_questions(clarification_needed)
+            # 等待用户反馈...
+        
+        # 更新理解
+        final_understanding = self.update_understanding(understanding, clarifications)
+        return final_understanding
+
+    async def generate_questions(self, unclear_points: List[str]) -> List[str]:
+        """生成澄清问题"""
+        return await self.qwen_agent.generate_questions(unclear_points)
+
+    def update_understanding(self, current: Dict, new_info: Dict) -> Dict:
+        """更新需求理解"""
+        return self.context_manager.merge_understanding(current, new_info)
 ```
 
-## 实施方法
-
-### 双阶段架构设计
-
-为确保需求分析的完整性和架构设计的精确性，我们采用双阶段设计方法：
-
-**第一阶段：全面需求挖掘**
-- 从初始需求触发主题相关的核心问题集
-- 每个回答触发更具体的子问题
-- 形成结构化的需求文档，包含所有必要细节
-
-**第二阶段：细化架构设计**
-- 基于完整需求生成高级架构
-- 使用决策点标记系统清晰记录每个技术选择
-- 为每个决策提供理由和备选方案
-
-示例输出：
-```json
-{
-  "architecture_component": "后端API服务",
-  "technology_choice": "Flask",
-  "decision_point": {
-    "alternatives": ["FastAPI", "Django REST", "Tornado"],
-    "reasoning": "考虑到团队熟悉度和项目复杂度中等，选择更成熟、文档更完善的Flask框架",
-    "trade_offs": "牺牲了FastAPI的性能优势，获得了更广泛的社区支持和插件生态"
-  },
-  "implementation_details": {
-    "configuration": "使用工厂模式组织应用",
-    "extensions": ["Flask-RESTful", "Flask-SQLAlchemy", "Flask-Caching"],
-    "deployment": "Gunicorn with gevent workers"
-  }
-}
-```
-
-### 技术选择验证机制
-
-为确保技术选择的一致性和可行性，我们实现了以下验证机制：
-
-1. **上下文依赖检查**：确保相互依赖的技术选择保持一致
-   - 例如：选择PostgreSQL后自动考虑对应的ORM和驱动
-   - 例如：选择微服务架构后自动考虑服务发现和负载均衡
-
-2. **技术组合可行性评分**：评估技术栈整体的兼容性和可行性
-   - 考量因素：版本兼容性、性能特性匹配、部署复杂度
-   - 输出：可行性分数和潜在风险提示
-
-3. **架构一致性验证**：确保架构各部分的技术选择相互兼容
-   - 检查点：通信协议、数据格式、认证机制等
-
-## 需求-技术映射表
-
-我们构建了详尽的需求与技术实现映射关系，部分示例如下：
-
-| 功能需求 | 技术实现考量 |
-|---------|------------|
-| 高并发请求处理 | 1. 异步框架选择<br>2. 负载均衡策略<br>3. 数据库连接池配置<br>4. 缓存层设计 |
-| 实时数据更新 | 1. WebSocket实现<br>2. 消息队列选择<br>3. 推送机制设计 |
-| 大规模数据存储 | 1. 分库分表策略<br>2. NoSQL数据库选型<br>3. 冷热数据分离方案 |
-| AI驱动的问答 | 1. 模型部署方式<br>2. 向量数据库选择<br>3. 检索增强生成配置 |
-
-## 集成人机协作模式
-
-我们设计了高效的人机协作模式，平衡自动化与人工专业知识：
-
-### 专家引导式询问
-
-- 系统自动生成关键问题，但允许人类专家进行优先级调整
-- 在复杂决策点提供备选方案和权衡分析，由专家做最终决策
-- 专家可以添加自定义问题或约束条件进入分析流程
-
-### 增量式架构细化
-
-- 首先生成并确认高层架构框架
-- 逐层深入各组件的技术细节
-- 为每个组件维护"待决策清单"，确保关键技术选择没有遗漏
-
-## 决策树节点管理与验证
-
-在需求分析和架构设计过程中，决策树的构建是至关重要的。特别需要解决的关键问题是：(1)如何区分决策树中的非叶子节点和叶子节点；(2)如何确保叶子节点的实现可行性和正确性。
-
-### 决策节点分类机制
-
-为了系统化地识别决策树中的节点类型，我们设计了以下分类机制：
+### 3.2 技术决策代理
 
 ```python
-class DecisionNodeClassifier:
-    def __init__(self, knowledge_base):
-        self.knowledge_base = knowledge_base
-        self.implementation_patterns = self._load_implementation_patterns()
+class TechnicalDecisionAgent:
+    def __init__(self):
+        self.qwen_agent = QwenAgent(model="tech_decision")
+        self.tech_knowledge = TechKnowledgeBase()
         
-    def classify_node(self, decision_point):
-        """确定决策点是叶子节点还是非叶子节点"""
-        # 抽象层次评估
-        abstraction_score = self._evaluate_abstraction_level(decision_point)
+    async def analyze_tech_requirements(self, spec: Dict[str, Any]) -> Dict[str, Any]:
+        """技术需求分析"""
+        # 提取技术约束
+        constraints = await self.extract_constraints(spec)
         
-        # 技术实现模式匹配
-        implementation_confidence = self._match_implementation_patterns(decision_point)
+        # 技术选型建议
+        tech_suggestions = await self.suggest_tech_stack(constraints)
         
-        # 依赖关系分析
-        dependency_count = self._analyze_dependencies(decision_point)
+        # 架构建议
+        architecture = await self.suggest_architecture(tech_suggestions)
         
-        # 综合评分决定节点类型
-        leaf_score = self._calculate_leaf_score(
-            abstraction_score, implementation_confidence, dependency_count)
-            
-        if leaf_score > 0.75:
-            return "LEAF_NODE", leaf_score
-        elif leaf_score < 0.3:
-            return "NON_LEAF_NODE", leaf_score
-        else:
-            return "AMBIGUOUS", leaf_score, self._generate_clarification_questions(decision_point)
+        return {
+            "constraints": constraints,
+            "tech_stack": tech_suggestions,
+            "architecture": architecture
+        }
+
+    async def suggest_tech_stack(self, constraints: Dict) -> List[Dict]:
+        """推荐技术栈"""
+        return await self.qwen_agent.analyze_tech_stack(constraints)
+
+    async def suggest_architecture(self, tech_stack: List[Dict]) -> Dict:
+        """推荐架构方案"""
+        return await self.qwen_agent.design_architecture(tech_stack)
 ```
 
-分类标准包括：
+### 3.3 规范优化代理
 
-1. **抽象层次评估**：评估决策点描述的抽象程度
-   - 高抽象度（"使用NoSQL数据库"）→ 非叶子节点
-   - 低抽象度（"使用MongoDB 4.4，配置WiredTiger存储引擎"）→ 叶子节点
+```python
+class SpecificationOptimizationAgent:
+    def __init__(self):
+        self.qwen_agent = QwenAgent(model="spec_optimization")
+        self.best_practices = BestPracticesDB()
+        
+    async def optimize_specification(self, spec: Dict[str, Any]) -> Dict[str, Any]:
+        """规范优化"""
+        # 完整性检查
+        completeness = await self.check_completeness(spec)
+        
+        # 一致性验证
+        consistency = await self.verify_consistency(spec)
+        
+        # 性能建议
+        performance = await self.suggest_performance_improvements(spec)
+        
+        # 安全性分析
+        security = await self.analyze_security(spec)
+        
+        return self.merge_improvements(spec, completeness, consistency, 
+                                    performance, security)
 
-2. **技术实现模式匹配**：与已知可直接实现的技术模式匹配度
-   - 高匹配度（符合标准实现模式）→ 叶子节点
-   - 低匹配度（需要进一步分解）→ 非叶子节点
+    async def check_completeness(self, spec: Dict) -> Dict:
+        """检查规范完整性"""
+        return await self.qwen_agent.verify_completeness(spec)
 
-3. **依赖关系分析**：评估决策点的内部依赖数量
-   - 低依赖（独立组件）→ 叶子节点
-   - 高依赖（复合功能）→ 非叶子节点
+    async def verify_consistency(self, spec: Dict) -> Dict:
+        """验证一致性"""
+        return await self.qwen_agent.check_consistency(spec)
+```
 
-### 叶子节点验证机制
+## 4. 工作流程
 
-为确保每个叶子节点都代表可实现且经过验证的组件，我们引入了叶子节点验证机制：
+### 4.1 需求分析流程
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant RA as RequirementAgent
+    participant TA as TechnicalAgent
+    participant SA as SpecAgent
+    
+    U->>RA: 提供初始需求
+    RA->>RA: 初步分析
+    loop 需求澄清
+        RA->>U: 提出澄清问题
+        U->>RA: 提供反馈
+    end
+    RA->>TA: 传递需求理解
+    TA->>TA: 技术分析
+    TA->>SA: 传递技术决策
+    SA->>SA: 生成规范
+    SA->>U: 返回最终规范
+```
+
+### 4.2 决策流程
 
 ```mermaid
 graph TD
-    A[识别叶子节点] --> B[生成验证性Demo]
-    B --> C[自动化测试]
-    C --> D{测试结果}
-    D -->|成功| E[标记为已验证叶子节点]
-    D -->|失败| F[降级为非叶子节点]
-    F --> G[细分为子决策点]
-    G --> B
+    A[需求输入] --> B[初始分析]
+    B --> C{需要澄清?}
+    C -->|是| D[生成问题]
+    D --> E[获取反馈]
+    E --> B
+    C -->|否| F[技术分析]
+    F --> G[架构决策]
+    G --> H[规范生成]
+    H --> I[规范优化]
+    I --> J[最终输出]
 ```
 
-核心验证流程包括：
+## 5. 配置示例
 
-1. **验证性Demo生成**：
-   - 为每个潜在叶子节点自动生成最小可行实现
-   - Demo包含基本功能和单元测试
-   - 应用最佳实践和设计模式
+### 5.1 代理配置
 
-2. **独立测试环境**：
-   - 每个叶子节点在隔离环境中测试
-   - 模拟关键依赖，减少外部影响
-   - 确保可独立运行和验证
+```yaml
+agents:
+  requirement_understanding:
+    model: "qwen-agent"
+    temperature: 0.7
+    max_tokens: 2000
+    context_window: 10
+    
+  technical_decision:
+    model: "qwen-agent"
+    temperature: 0.5
+    max_tokens: 1500
+    knowledge_base: "tech_stack_v1"
+    
+  specification_optimization:
+    model: "qwen-agent"
+    temperature: 0.3
+    max_tokens: 1000
+    best_practices: "v2.1"
+```
 
-3. **验证标准分级**：
-   ```json
-   {
-     "verification_levels": [
-       {
-         "level": "L1",
-         "description": "通过语法和静态分析",
-         "required_tests": ["syntax", "static_analysis"]
-       },
-       {
-         "level": "L2",
-         "description": "通过基本功能测试",
-         "required_tests": ["unit_tests", "basic_functionality"]
-       },
-       {
-         "level": "L3",
-         "description": "通过边缘情况和性能测试",
-         "required_tests": ["edge_cases", "performance_benchmarks"]
-       }
-     ]
-   }
-   ```
+### 5.2 知识库配置
 
-### 渐进式集成策略
+```yaml
+knowledge_bases:
+  domain:
+    patterns: "v2.0"
+    update_frequency: "daily"
+    sources:
+      - "internal_docs"
+      - "github_trends"
+      - "tech_blogs"
+  
+  technical:
+    patterns: "v1.5"
+    update_frequency: "weekly"
+    sources:
+      - "stack_overflow"
+      - "github"
+      - "tech_papers"
+```
 
-为避免将未经充分验证的组件集成导致的后期问题，我们采用渐进式集成策略：
+## 6. 使用示例
 
-1. **分层集成优先级**：
-   - 按功能依赖关系确定集成顺序
-   - 核心基础组件优先集成和测试
-   - 构建完整依赖图指导集成过程
+### 6.1 基本使用
 
-2. **集成检查点**：
-   - 在每个主要集成点设置自动化检查
-   - 验证组件间接口一致性
-   - 集成测试覆盖关键交互路径
+```python
+async def analyze_requirement(text: str) -> Dict[str, Any]:
+    # 初始化代理
+    req_agent = RequirementUnderstandingAgent()
+    tech_agent = TechnicalDecisionAgent()
+    spec_agent = SpecificationOptimizationAgent()
+    
+    # 需求分析
+    understanding = await req_agent.analyze_requirement(text)
+    
+    # 技术决策
+    tech_decisions = await tech_agent.analyze_tech_requirements(understanding)
+    
+    # 规范优化
+    final_spec = await spec_agent.optimize_specification({
+        "understanding": understanding,
+        "tech_decisions": tech_decisions
+    })
+    
+    return final_spec
+```
 
-3. **回滚与重组机制**：
-   - 检测到集成问题时快速隔离和诊断
-   - 维护组件替代方案库，支持快速调整
-   - 记录所有集成决策，支持回溯分析
+### 6.2 高级使用
 
-示例集成规划：
-```json
-{
-  "integration_plan": {
-    "phase_1": {
-      "components": ["core_db_connection", "basic_auth"],
-      "dependencies": [],
-      "verification_criteria": "L3"
-    },
-    "phase_2": {
-      "components": ["user_api", "data_access_layer"],
-      "dependencies": ["phase_1"],
-      "verification_criteria": "L2"
-    },
-    "phase_3": {
-      "components": ["advanced_search", "caching_system"],
-      "dependencies": ["phase_2"],
-      "verification_criteria": "L2"
+```python
+async def advanced_analysis(text: str, context: Dict = None) -> Dict[str, Any]:
+    # 初始化分析器
+    analyzer = AdvancedRequirementAnalyzer(
+        requirement_agent=RequirementUnderstandingAgent(),
+        technical_agent=TechnicalDecisionAgent(),
+        spec_agent=SpecificationOptimizationAgent(),
+        context_manager=ContextManager()
+    )
+    
+    # 设置分析选项
+    options = {
+        "max_clarification_turns": 3,
+        "min_confidence_score": 0.8,
+        "enable_deep_analysis": True,
+        "include_alternatives": True
     }
-  }
-}
+    
+    # 执行分析
+    result = await analyzer.analyze(
+        text=text,
+        context=context,
+        options=options
+    )
+    
+    return result
 ```
 
-### 上下文管理优化
+## 7. 测试策略
 
-为解决集成测试过程中上下文token消耗过大的问题，我们设计了智能上下文管理策略：
-
-1. **上下文分区**：
-   - 将大型决策树划分为相对独立的上下文域
-   - 每个域专注于特定功能领域或技术栈
-   - 在域内完成验证后再进行跨域集成
-
-2. **可复用验证结果**：
-   - 建立验证结果缓存机制
-   - 相似组件和配置复用验证结果
-   - 增量验证策略，仅验证变更部分
-
-3. **验证状态持久化**：
-   - 保存中间验证结果和测试状态
-   - 支持会话恢复和继续验证
-   - 减少重复生成和验证的token消耗
-
-### 层次化决策筛选机制
-
-在复杂系统设计中，决策树的路径可能非常长，每个节点都可能面临多个决策选项。为了避免决策空间的组合爆炸，我们设计了层次化决策筛选机制，利用高层次目标和上游决策来智能筛选当前节点的决策选项。
-
-```mermaid
-graph TD
-    A[高层目标与约束] --> B[历史决策与理由分析]
-    B --> C[决策项筛选引擎]
-    C --> D[决策选项排序]
-    D --> E[最优选项子集]
-```
-
-#### 目标驱动的选项筛选
-
-1. **目标一致性评分**：
-   - 建立每个决策选项与高层目标的一致性评分矩阵
-   - 评估决策选项对系统目标的贡献度
-   - 筛除与核心目标冲突的选项
-
-   ```python
-   def calculate_goal_alignment(decision_options, system_goals):
-       """计算决策选项与系统目标的一致性"""
-       alignment_scores = {}
-       for option in decision_options:
-           option_score = 0
-           for goal in system_goals:
-               contribution = self._evaluate_contribution(option, goal)
-               if contribution < -threshold:  # 强负面影响
-                   return -1  # 直接排除该选项
-               option_score += contribution * goal.weight
-           alignment_scores[option] = option_score
-       return alignment_scores
-   ```
-
-2. **约束传播机制**：
-   - 从高层约束推导出当前层面的具体约束
-   - 识别并优先考虑满足所有硬约束的选项
-   - 对软约束的满足程度进行加权评分
-
-#### 决策历史追踪与利用
-
-1. **决策一致性检查**：
-   - 分析已做决策的理由和依据
-   - 检查新决策选项是否与已有决策保持技术一致性
-   - 标记潜在的决策冲突和矛盾
-
-   ```python
-   def check_decision_consistency(new_option, previous_decisions):
-       """检查新选项与已有决策的一致性"""
-       consistency_issues = []
-       for prev_decision, reasoning in previous_decisions.items():
-           # 检查技术栈兼容性
-           if not self._is_technology_compatible(new_option, prev_decision):
-               consistency_issues.append({
-                   "type": "technology_incompatibility",
-                   "description": f"选项 {new_option} 与已选 {prev_decision} 技术不兼容",
-                   "severity": "high"
-               })
-           # 检查设计原则一致性
-           if not self._is_design_principle_consistent(new_option, reasoning):
-               consistency_issues.append({
-                   "type": "design_principle_inconsistency",
-                   "description": f"选项 {new_option} 与决策 {prev_decision} 的设计原则 '{reasoning.principle}' 不一致",
-                   "severity": "medium" 
-               })
-       return consistency_issues
-   ```
-
-2. **决策链提取**：
-   - 构建从根节点到当前节点的决策路径
-   - 分析决策理由之间的关联和递进关系
-   - 预测该路径对未来决策的约束和影响
-
-#### 多标准决策评分系统
-
-为处理长决策路径中的复杂选择，我们实现了多标准集成评分系统：
+### 7.1 单元测试
 
 ```python
-class DecisionOptionRanker:
-    def __init__(self, criteria_weights=None):
-        self.default_weights = {
-            "goal_alignment": 0.35,
-            "consistency_with_history": 0.25,
-            "implementation_feasibility": 0.20,
-            "future_flexibility": 0.10,
-            "resource_efficiency": 0.10
-        }
-        self.criteria_weights = criteria_weights or self.default_weights
-    
-    def rank_options(self, options, context):
-        """对决策选项进行综合排名"""
-        scores = {}
-        for option in options:
-            option_scores = {}
-            # 计算各项标准的得分
-            option_scores["goal_alignment"] = self._calculate_goal_alignment(option, context)
-            option_scores["consistency_with_history"] = self._evaluate_consistency(option, context.previous_decisions)
-            option_scores["implementation_feasibility"] = self._assess_feasibility(option)
-            option_scores["future_flexibility"] = self._evaluate_flexibility(option)
-            option_scores["resource_efficiency"] = self._calculate_efficiency(option)
-            
-            # 计算加权总分
-            total_score = sum(score * self.criteria_weights[criterion] 
-                              for criterion, score in option_scores.items())
-            scores[option] = {
-                "total_score": total_score,
-                "breakdown": option_scores,
-                "recommendation": self._generate_recommendation(total_score, option_scores)
-            }
+class TestRequirementAgent(unittest.TestCase):
+    async def test_requirement_understanding(self):
+        agent = RequirementUnderstandingAgent()
+        result = await agent.analyze_requirement(
+            "创建一个用户认证系统，支持邮箱注册和登录"
+        )
         
-        # 返回排序后的选项
-        return sorted(scores.items(), key=lambda x: x[1]["total_score"], reverse=True)
+        self.assertIn("authentication", result["domain"])
+        self.assertIn("email", result["features"])
+        
+    async def test_question_generation(self):
+        agent = RequirementUnderstandingAgent()
+        questions = await agent.generate_questions(
+            ["password_policy", "session_management"]
+        )
+        
+        self.assertTrue(len(questions) > 0)
+        self.assertTrue(any("密码" in q for q in questions))
 ```
 
-#### 适应性决策树修剪
+### 7.2 集成测试
 
-为了进一步优化决策过程，我们实现了自适应决策树修剪策略：
-
-1. **重要性阈值过滤**：
-   - 根据当前上下文动态调整重要性阈值
-   - 过滤掉低于阈值的次要决策点
-   - 集中资源在关键决策上
-
-2. **相似选项合并**：
-   - 识别功能和性能特性相近的选项
-   - 合并冗余或高度相似的决策选项
-   - 提供合并的理由和可能的差异说明
-
-3. **前瞻性评估**：
-   - 评估每个决策选项对后续决策树复杂度的影响
-   - 预测选择特定选项后的决策树深度和宽度
-   - 优先考虑能够简化后续决策的选项
-
-```json
-{
-  "decision_pruning_example": {
-    "original_options_count": 12,
-    "after_goal_filtering": 8,
-    "after_consistency_check": 5,
-    "after_similarity_merging": 3,
-    "final_options": [
-      {
-        "name": "Option A (Merged from A, B, C)",
-        "score": 0.92,
-        "rationale": "这三个选项在核心功能上相似，差异主要在次要配置上，合并后简化决策"
-      },
-      {
-        "name": "Option D",
-        "score": 0.85,
-        "rationale": "提供了独特的性能优势，与先前的微服务架构决策高度一致"
-      },
-      {
-        "name": "Option G",
-        "score": 0.79,
-        "rationale": "虽然得分较低，但提供了重要的未来扩展性，保留作为备选"
-      }
-    ]
-  }
-}
+```python
+class TestIntegration(unittest.TestCase):
+    async def test_full_workflow(self):
+        analyzer = AdvancedRequirementAnalyzer()
+        result = await analyzer.analyze(
+            "开发一个在线商城系统，支持商品管理和订单处理"
+        )
+        
+        self.assertIn("e-commerce", result["domain"])
+        self.assertIn("product_management", result["modules"])
+        self.assertIn("order_processing", result["modules"])
 ```
 
-通过这些机制，我们可以将长决策路径中大量的并行选项智能地筛选为少数几个最佳候选项，大大简化了决策过程，同时确保筛选出的选项与高层目标保持一致，并与已有决策形成连贯的技术路线。这种层次化筛选机制不仅提高了决策效率，还增强了整体架构的一致性和可维护性。
+## 8. 部署考虑
 
-## 结论与未来工作
+1. **资源需求**
+   - CPU: 8+ cores
+   - RAM: 16+ GB
+   - GPU: 推荐用于模型推理
+   - 存储: SSD, 50+ GB
 
-高级需求分析模块通过结构化的问题分解和技术决策流程，有效解决了简单需求背后复杂细节的挖掘问题。该模块不仅能辅助分析复杂需求，更能生成包含完整技术决策理由的架构设计，大大提高了自动编程系统的实用性。
+2. **扩展性配置**
+   - 负载均衡设置
+   - 模型并行处理
+   - 分布式部署支持
 
-未来工作将聚焦于以下方向：
+3. **监控指标**
+   - 响应时间
+   - 模型调用频率
+   - 内存使用
+   - 错误率
 
-1. 扩展领域特定问题库，覆盖更多应用场景
-2. 改进技术依赖图的自动更新机制，适应新兴技术栈
-3. 开发更精细的需求完整性评估指标
-4. 增强与其他模块（如代码生成器、验证环境）的集成能力 
+## 9. 维护和更新
+
+1. **日常维护**
+   - 知识库更新
+   - 模型微调
+   - 性能优化
+   - 错误修复
+
+2. **版本更新**
+   - 特性添加
+   - 架构优化
+   - 依赖更新
+   - 文档更新
+
+## 10. 安全措施
+
+1. **输入验证**
+   - 敏感信息过滤
+   - 长度限制
+   - 格式验证
+   - 注入防护
+
+2. **输出控制**
+   - 敏感数据脱敏
+   - 结果验证
+   - 格式规范化
+   - 错误处理 
