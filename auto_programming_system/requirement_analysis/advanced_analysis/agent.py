@@ -13,10 +13,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
 
 try:
     # 尝试导入qwen_agent相关模块
-    from qwen_agent.agents import FnCallAgent  
+    from qwen_agent.agents.fncall_agent import FnCallAgent as QwenFnCallAgent
     from qwen_agent.llm import BaseChatModel
     from qwen_agent.llm.schema import ASSISTANT, DEFAULT_SYSTEM_MESSAGE, USER, Message
-    from qwen_agent.tools.base import BaseTool, register_tool
+    from qwen_agent.tools.base import BaseTool as QwenBaseTool, register_tool
 
     # 标记是否使用qwen_agent
     USE_QWEN_AGENT = True

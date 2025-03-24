@@ -1,0 +1,59 @@
+创建一个RESTful API端点，用于管理用户订单系统。需要实现以下功能：
+
+1. 订单管理
+   - 创建新订单 (POST /orders)
+   - 查询订单列表 (GET /orders)
+   - 获取订单详情 (GET /orders/{order_id})
+   - 更新订单状态 (PUT /orders/{order_id})
+   - 删除订单 (DELETE /orders/{order_id})
+
+2. 数据模型
+   - Order模型：
+     * order_id: str (UUID)
+     * user_id: str
+     * items: List[OrderItem]
+     * total_amount: float
+     * status: OrderStatus
+     * created_at: datetime
+     * updated_at: datetime
+
+   - OrderItem模型：
+     * item_id: str
+     * product_id: str
+     * quantity: int
+     * unit_price: float
+     * subtotal: float
+
+   - OrderStatus枚举：
+     * PENDING
+     * CONFIRMED
+     * SHIPPED
+     * DELIVERED
+     * CANCELLED
+
+3. 功能要求
+   - 使用FastAPI框架
+   - 数据存储使用SQLAlchemy + PostgreSQL
+   - 实现基本的参数验证
+   - 添加错误处理
+   - 支持分页查询
+   - 实现简单的认证机制
+
+4. 性能要求
+   - API响应时间不超过200ms
+   - 支持并发请求
+   - 添加适当的缓存机制
+
+5. 安全要求
+   - 输入验证和清洗
+   - SQL注入防护
+   - XSS防护
+   - CORS配置
+   - 请求频率限制
+
+6. 文档要求
+   - API文档（使用FastAPI的自动文档生成）
+   - 数据模型文档
+   - 部署说明文档
+
+请实现这个订单管理系统的后端API，确保代码清晰、模块化，并遵循RESTful API设计最佳实践。 

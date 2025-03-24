@@ -24,3 +24,37 @@ pylint>=2.17.0
 
 # 工具库
 tqdm>=4.66.0
+
+# 测试框架
+pytest==8.3.5
+pytest-cov==6.0.0
+pytest-html==4.1.1
+pytest-benchmark==4.0.0
+pytest-xdist==3.5.0
+
+# 性能监控
+psutil==5.9.8
+
+# 代码质量
+pylint==3.1.0
+black==24.3.0
+mypy==1.9.0
+
+# 开发工具
+ipython==8.22.2
+jupyter==1.0.0
+
+# 项目依赖
+fastapi==0.110.0
+sqlalchemy==2.0.28
+pydantic==2.6.4
+python-dotenv==1.0.1
+requests==2.31.0
+numpy==1.26.4
+pandas==2.2.1
+scikit-learn==1.4.1.post1
+torch==2.2.1
+transformers==4.38.2
+nltk==3.8.1
+spacy==3.7.4
+jieba==0.42.1
