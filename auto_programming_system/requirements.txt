@@ -12,7 +12,7 @@ jinja2>=3.1.2
 
 # 代码执行和安全相关
 RestrictedPython>=6.0
-pytest-sandbox>=0.5.0
+# pytest-sandbox>=0.5.0
 
 # 数据处理相关
 numpy>=1.24.0

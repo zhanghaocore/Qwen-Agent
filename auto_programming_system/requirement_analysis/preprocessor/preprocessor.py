@@ -91,6 +91,22 @@ class TextPreprocessor:
         self.term_extractor = TermExtractor(tech_dictionary_path)
         self.normalizer = TextNormalizer()
     
+    def process(self, text: str) -> str:
+        """
+        处理文本并返回规范化后的文本
+        
+        Args:
+            text: 原始输入文本
+            
+        Returns:
+            预处理后的文本字符串
+        """
+        # 调用 preprocess 方法获取完整的预处理结果
+        result = self.preprocess(text)
+        
+        # 返回规范化后的文本
+        return result.normalized_text or result.cleaned_text or text
+    
     def preprocess(self, text: str) -> PreprocessedText:
         """
         预处理文本
