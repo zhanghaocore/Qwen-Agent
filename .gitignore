@@ -42,3 +42,5 @@ examples/docqa_multihp_agents.py
 test/*
 tests/env.sh
 examples/data/*
+
+.env
