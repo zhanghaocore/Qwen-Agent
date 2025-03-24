@@ -32,8 +32,9 @@ class SentenceSplitter:
         # 列表项模式 (例如：1. 项目 2. 项目)
         self.list_item_pattern = re.compile(r'(\d+\.\s+|\*\s+|[\-•]\s+)')
         
-        # 复杂句子结构
-        self.complex_boundary = re.compile(r'(?<=[.!?。！？])\s*(?=[A-Z\u4e00-\u9fff])')
+        # 修复复杂句子结构的正则表达式，确保空格处理一致性
+        # 改进：确保句末标点后接新句子时空格处理一致，同时处理中英文标点
+        self.complex_boundary = re.compile(r'(?<=[.!?。！？])(?:\s*)(?=[A-Z\u4e00-\u9fff])')
         
     def contains_abbreviation(self, segment: str) -> bool:
         """
@@ -165,8 +166,8 @@ class SentenceSplitter:
             if (len(current) < 15 and 
                 not self.list_item_pattern.match(current) and
                 not current.startswith(('•', '-', '*'))):
-                # 合并到前一个句子
-                temp_sentence = temp_sentence + " " + current
+                # 合并到前一个句子，确保中间有一个空格
+                temp_sentence = temp_sentence.rstrip() + " " + current.lstrip()
             else:
                 # 添加积累的句子
                 result.append(temp_sentence)
@@ -195,7 +196,7 @@ class SentenceSplitter:
         if re.match(r'^[^\w\u4e00-\u9fff]+$', text.strip()):
             return []
             
-        # 去除多余空白
+        # 统一处理空格，去除多余空白，但保留单个空格
         cleaned_text = re.sub(r'\s+', ' ', text.strip())
         
         # 先检查文本是否包含句号等标点，如果没有则直接作为一个句子返回
@@ -206,24 +207,33 @@ class SentenceSplitter:
         sentences = []
         
         # 首先按照复杂边界进行分割
+        # 改进：对中英文标点分别处理，确保空格一致性
         segments = self.complex_boundary.split(cleaned_text)
         
         # 进一步处理每个分段
         for segment in segments:
+            # 处理中文标点（特殊处理，因为中文标点通常不带空格）
+            # 拆分中文标点后的句子，同时确保每个句子都是清理过的
+            if re.search(r'[。！？]', segment) and re.search(r'[\u4e00-\u9fff]', segment):
+                cn_segments = re.split(r'(?<=[。！？])(?!["\')\]】}])', segment)
+                for cn_seg in cn_segments:
+                    if cn_seg.strip():
+                        sentences.append(cn_seg.strip())
             # 处理缩写
-            if self.contains_abbreviation(segment):
+            elif self.contains_abbreviation(segment):
                 corrected = self.fix_abbreviation_splits(segment)
-                sentences.extend(corrected)
+                sentences.extend([s.strip() for s in corrected if s.strip()])
             else:
-                sentences.append(segment)
+                sentences.append(segment.strip())
         
         # 处理列表项
         list_processed = []
         for sentence in sentences:
             if self.list_item_pattern.search(sentence):
-                list_processed.extend(self.process_list_items(sentence))
+                list_items = self.process_list_items(sentence)
+                list_processed.extend([item.strip() for item in list_items if item.strip()])
             else:
-                list_processed.append(sentence)
+                list_processed.append(sentence.strip())
         
         # 最终清理：删除空句子，合并过短片段
         merged_sentences = self.clean_and_merge_sentences(list_processed)
@@ -233,7 +243,9 @@ class SentenceSplitter:
         for s in merged_sentences:
             # 移除只包含标点符号和空格的句子
             if re.search(r'[A-Za-z0-9\u4e00-\u9fff]', s):
-                final_sentences.append(s)
+                # 确保最终句子都经过了空格标准化
+                final_s = re.sub(r'\s+', ' ', s.strip())
+                final_sentences.append(final_s)
                 
         return final_sentences if final_sentences else [cleaned_text]
     
@@ -249,12 +261,12 @@ class SentenceSplitter:
         """
         sentences = self.split_into_sentences(text)
         
+        # 计算元数据
         avg_length = 0
         if sentences:
             avg_length = sum(len(s) for s in sentences) / len(sentences)
-        
+            
         return {
-            'original_text': text,
             'sentences': sentences,
             'sentence_count': len(sentences),
             'avg_sentence_length': avg_length

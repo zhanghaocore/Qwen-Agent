@@ -202,108 +202,143 @@ class TextNormalizer:
     
     def normalize_dates(self, text: str) -> str:
         """
-        规范化日期格式为ISO格式 (YYYY-MM-DD)
+        将不同格式的日期转换为标准格式 (YYYY-MM-DD)
         
         Args:
             text: 输入文本
             
         Returns:
-            规范化后的文本
+            日期格式标准化后的文本
         """
         if not text:
-            return text
-            
-        result = text
+            return ""
         
-        # 处理 数字/数字/数字 格式 (MM/DD/YYYY 或 DD/MM/YYYY 或 YYYY/MM/DD)
-        def replace_numeric_date(match: Match) -> str:
-            try:
-                parts = match.groups()
-                year, month, day = self._parse_date_parts(parts)
-                
-                # 确保月和日有两位数
-                month_str = str(month).zfill(2)
-                day_str = str(day).zfill(2)
-                
-                # 如果原始格式使用/分隔，保持/
-                separator = '-'
-                if '/' in match.group(0):
-                    separator = '/'
-                
-                return f"{year}{separator}{month_str}{separator}{day_str}"
-            except:
-                # 如果解析失败，保持原样
-                return match.group(0)
-            
-        result = self.date_patterns[0].sub(replace_numeric_date, result)
+        normalized = text
         
-        # 处理 Month DD, YYYY 格式
-        month_to_num = {
-            'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04',
-            'may': '05', 'jun': '06', 'jul': '07', 'aug': '08',
-            'sep': '09', 'oct': '10', 'nov': '11', 'dec': '12'
+        # 改进：完善日期格式匹配模式，处理更多的日期表示方式
+        
+        # 匹配 MM/DD/YYYY 或 DD/MM/YYYY 格式（取决于地区）
+        # 示例: 03/25/2023, 25/03/2023
+        date_pattern1 = re.compile(r'\b(0?[1-9]|1[0-2])/(0?[1-9]|[12][0-9]|3[01])/(\d{4})\b')
+        date_pattern2 = re.compile(r'\b(0?[1-9]|[12][0-9]|3[01])/(0?[1-9]|1[0-2])/(\d{4})\b')
+        
+        # 匹配 YYYY/MM/DD 格式
+        # 示例: 2023/03/25
+        date_pattern3 = re.compile(r'\b(\d{4})/(0?[1-9]|1[0-2])/(0?[1-9]|[12][0-9]|3[01])\b')
+        
+        # 匹配 Month DD, YYYY 格式
+        # 示例: March 25, 2023
+        months = {
+            'january': '01', 'february': '02', 'march': '03',
+            'april': '04', 'may': '05', 'june': '06',
+            'july': '07', 'august': '08', 'september': '09',
+            'october': '10', 'november': '11', 'december': '12',
+            'jan': '01', 'feb': '02', 'mar': '03',
+            'apr': '04', 'jun': '06', 'jul': '07',
+            'aug': '08', 'sep': '09', 'oct': '10',
+            'nov': '11', 'dec': '12'
         }
+        month_pattern = r'(?:' + '|'.join([re.escape(m) for m in months.keys()]) + r')'
+        date_pattern4 = re.compile(
+            fr'\b({month_pattern})\s+(0?[1-9]|[12][0-9]|3[01])(?:st|nd|rd|th)?,?\s+(\d{{4}})\b',
+            re.IGNORECASE
+        )
         
-        def replace_month_name_date(match: Match) -> str:
+        # 匹配 DD Month YYYY 格式
+        # 示例: 25 March 2023
+        date_pattern5 = re.compile(
+            fr'\b(0?[1-9]|[12][0-9]|3[01])\s+({month_pattern})(?:\s+|,\s+)(\d{{4}})\b',
+            re.IGNORECASE
+        )
+        
+        # 匹配中文日期格式
+        # 示例: 2023年3月25日
+        date_pattern6 = re.compile(r'\b(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})日\b')
+        
+        # 匹配 ISO 8601 日期格式 (YYYY-MM-DD)
+        date_pattern7 = re.compile(r'\b(\d{4})-(\d{2})-(\d{2})\b')
+        
+        def replace_date1(match):
+            # MM/DD/YYYY -> YYYY-MM-DD
+            month, day, year = match.groups()
+            # 验证日期的有效性
             try:
-                month_name, day, year = match.groups()
-                month_num = month_to_num.get(month_name.lower()[:3], '01')
-                
-                # 确保年份有4位
-                if len(year) == 2:
-                    year = '20' + year if int(year) < 50 else '19' + year
-                    
-                # 确保日有两位数
-                day = day.zfill(2)
-                
-                return f"{year}-{month_num}-{day}"
-            except:
-                # 如果解析失败，保持原样
-                return match.group(0)
-            
-        result = self.date_patterns[1].sub(replace_month_name_date, result)
+                d = datetime.date(int(year), int(month), int(day))
+                return f"{year}-{int(month):02d}-{int(day):02d}"
+            except ValueError:
+                return match.group(0)  # 保持原始格式
         
-        # 处理 DD Month YYYY 格式
-        def replace_day_month_date(match: Match) -> str:
+        def replace_date2(match):
+            # DD/MM/YYYY -> YYYY-MM-DD
+            day, month, year = match.groups()
             try:
-                day, month_name, year = match.groups()
-                month_num = month_to_num.get(month_name.lower()[:3], '01')
-                
-                # 确保年份有4位
-                if len(year) == 2:
-                    year = '20' + year if int(year) < 50 else '19' + year
-                    
-                # 确保日有两位数
-                day = day.zfill(2)
-                
-                return f"{year}-{month_num}-{day}"
-            except:
-                # 如果解析失败，保持原样
+                d = datetime.date(int(year), int(month), int(day))
+                return f"{year}-{int(month):02d}-{int(day):02d}"
+            except ValueError:
                 return match.group(0)
-            
-        result = self.date_patterns[2].sub(replace_day_month_date, result)
         
-        # 处理中文日期格式 YYYY年MM月DD日
-        def replace_chinese_date(match: Match) -> str:
+        def replace_date3(match):
+            # YYYY/MM/DD -> YYYY-MM-DD
+            year, month, day = match.groups()
             try:
-                year, month, day = match.groups()
-                
-                # 确保年份有4位
-                if len(year) == 2:
-                    year = '20' + year if int(year) < 50 else '19' + year
-                    
-                # 确保月和日有两位数
-                month = month.zfill(2)
-                day = day.zfill(2)
-                
-                return f"{year}-{month}-{day}"
-            except:
-                # 如果解析失败，保持原样
+                d = datetime.date(int(year), int(month), int(day))
+                return f"{year}-{int(month):02d}-{int(day):02d}"
+            except ValueError:
                 return match.group(0)
-                
-        result = self.date_patterns[3].sub(replace_chinese_date, result)
         
-        return result
+        def replace_date4(match):
+            # Month DD, YYYY -> YYYY-MM-DD
+            month_name, day, year = match.groups()
+            month_num = months.get(month_name.lower())
+            if month_num:
+                try:
+                    d = datetime.date(int(year), int(month_num), int(day))
+                    return f"{year}-{month_num}-{int(day):02d}"
+                except ValueError:
+                    return match.group(0)
+            return match.group(0)
+        
+        def replace_date5(match):
+            # DD Month YYYY -> YYYY-MM-DD
+            day, month_name, year = match.groups()
+            month_num = months.get(month_name.lower())
+            if month_num:
+                try:
+                    d = datetime.date(int(year), int(month_num), int(day))
+                    return f"{year}-{month_num}-{int(day):02d}"
+                except ValueError:
+                    return match.group(0)
+            return match.group(0)
+        
+        def replace_date6(match):
+            # 2023年3月25日 -> 2023-03-25
+            year, month, day = match.groups()
+            try:
+                d = datetime.date(int(year), int(month), int(day))
+                return f"{year}-{int(month):02d}-{int(day):02d}"
+            except ValueError:
+                return match.group(0)
+        
+        def replace_date7(match):
+            # YYYY-MM-DD - 验证格式
+            year, month, day = match.groups()
+            try:
+                d = datetime.date(int(year), int(month), int(day))
+                # 已经是标准格式，但确保月和日是两位数
+                return f"{year}-{int(month):02d}-{int(day):02d}"
+            except ValueError:
+                return match.group(0)
+        
+        # 应用所有格式转换
+        normalized = date_pattern1.sub(replace_date1, normalized)
+        normalized = date_pattern2.sub(replace_date2, normalized)
+        normalized = date_pattern3.sub(replace_date3, normalized)
+        normalized = date_pattern4.sub(replace_date4, normalized)
+        normalized = date_pattern5.sub(replace_date5, normalized)
+        normalized = date_pattern6.sub(replace_date6, normalized)
+        normalized = date_pattern7.sub(replace_date7, normalized)
+        
+        return normalized
     
     def normalize_times(self, text: str) -> str:
         """
