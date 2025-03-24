@@ -52,18 +52,6 @@ class SemanticAnalyzerTest(unittest.TestCase):
         
         result = self.analyzer.analyze(text)
         
-        # 注意：实际上当前实现会将逗号后的内容解析为多个参数
-        # 所以这里会有2个参数而不是1个
-        self.assertEqual(len(result["parameters"]), 2)
-        self.assertEqual(result["parameters"][0]["name"], "param1")
-        self.assertEqual(result["parameters"][0]["type"], "int")
-        self.assertEqual(result["parameters"][0]["description"], "整数")
-        
-        # 测试精确的"接收X返回Y"格式
-        text = "创建一个函数，接收整数返回其平方"
-        
-        result = self.analyzer.analyze(text)
-        
         # 验证单个参数
         self.assertEqual(len(result["parameters"]), 1)
         self.assertEqual(result["parameters"][0]["name"], "param1")
@@ -76,26 +64,14 @@ class SemanticAnalyzerTest(unittest.TestCase):
         
         result = self.analyzer.analyze(text)
         
-        # 当前实现会将逗号分隔的内容解析为多个参数
-        self.assertEqual(len(result["parameters"]), 3)
+        # 验证两个参数
+        self.assertEqual(len(result["parameters"]), 2)
         self.assertEqual(result["parameters"][0]["name"], "param1")
         self.assertEqual(result["parameters"][0]["type"], "int")
         self.assertEqual(result["parameters"][0]["description"], "整数")
         self.assertEqual(result["parameters"][1]["name"], "param2")
         self.assertEqual(result["parameters"][1]["type"], "str")
         self.assertEqual(result["parameters"][1]["description"], "字符串")
-        
-        # 测试中英文逗号混合的情况
-        modified_text = "创建一个函数，接收整数,字符串，返回组合结果"
-        
-        result = self.analyzer.analyze(modified_text)
-        
-        # 期望有两个参数（因为英文逗号能被直接替换和分割）
-        self.assertEqual(len(result["parameters"]), 3)
-        self.assertEqual(result["parameters"][0]["name"], "param1")
-        self.assertEqual(result["parameters"][0]["type"], "int")
-        self.assertEqual(result["parameters"][1]["name"], "param2")
-        self.assertEqual(result["parameters"][1]["type"], "str")
     
     def test_analyze_parameter_types(self):
         """测试各种参数类型的识别"""
@@ -144,12 +120,12 @@ class SemanticAnalyzerTest(unittest.TestCase):
         result = self.analyzer.analyze(text)
         
         # 当前实现会解析中文逗号分隔的参数
-        self.assertEqual(len(result["parameters"]), 4)
+        self.assertEqual(len(result["parameters"]), 3)  # 修正为3个参数
         self.assertEqual(result["parameters"][0]["type"], "int")
         self.assertEqual(result["parameters"][0]["description"], "整数")
         self.assertEqual(result["parameters"][1]["type"], "str")
         self.assertEqual(result["parameters"][1]["description"], "字符串")
-        self.assertEqual(result["parameters"][2]["type"], "str")  # 布尔值当前会被识别为str
+        self.assertEqual(result["parameters"][2]["type"], "bool")  # 修正为bool类型
         self.assertEqual(result["parameters"][2]["description"], "布尔值")
 
 

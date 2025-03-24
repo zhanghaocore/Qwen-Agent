@@ -154,7 +154,7 @@ class SemanticAnalyzer:
             "description": description,
             "parameters": [],
             "return_type": "Any",
-            "return_description": "函数返回值",
+            "return_description": "函数返回值",  # 使用固定的返回值描述
             "constraints": [],
             "examples": []
         }
@@ -197,32 +197,14 @@ class SemanticAnalyzer:
     
     def _extract_parameters_and_return(self, text: str, result: Dict[str, Any]) -> Dict[str, Any]:
         """提取参数和返回值信息"""
-        # 复杂参数提取模式
-        param_patterns = [
-            # "接收一个X"模式
-            (r'接收(?:一个|1个|一|1)?(\S+?)(?:，|,|和|与|并|然后|之后|最后)', self._process_param_match),
-            # "输入X"模式
-            (r'输入(?:一个|1个|一|1)?(\S+?)(?:，|,|和|与|并|然后|之后|最后)', self._process_param_match),
-            # "使用X"模式
-            (r'使用(?:一个|1个|一|1)?(\S+?)(?:，|,|和|与|并|然后|之后|最后)', self._process_param_match),
-            # "对于X"模式
-            (r'对于(?:一个|1个|一|1)?(\S+?)(?:，|,|和|与|并|然后|之后|最后)', self._process_param_match),
-            # 参数列表模式
-            (r'参数包括(?:：|:)?\s*([\S\s]+?)(?:。|；|;|\n|$)', self._process_param_list),
-        ]
+        # 如果有"接收"关键词，提取其后到"返回"之前的所有内容作为参数
+        if "接收" in text:
+            param_text = text.split("接收")[1]
+            if "返回" in param_text:
+                param_text = param_text.split("返回")[0]
+            self._extract_parameters_from_text(param_text.strip(), result)
         
-        # 应用所有参数提取模式
-        for pattern, processor in param_patterns:
-            matches = re.finditer(pattern, text)
-            for match in matches:
-                processor(match, result)
-        
-        # 如果有"接收"但没有提取到参数，尝试更简单的模式
-        if "接收" in text and len(result["parameters"]) == 0:
-            param_text = text.split("接收")[1].split("返回")[0].strip() if "返回" in text else text.split("接收")[1].strip()
-            self._extract_parameters_from_text(param_text, result)
-        
-        # 尝试提取返回值信息
+        # 尝试提取返回值类型
         return_patterns = [
             r'返回(?:一个|1个|一|1)?(\S+)',
             r'输出(?:一个|1个|一|1)?(\S+)',
@@ -235,7 +217,6 @@ class SemanticAnalyzer:
                 return_type_text = match.group(1)
                 return_type = self._infer_data_type(return_type_text)
                 result["return_type"] = return_type
-                result["return_description"] = f"返回{return_type_text}"
                 break
         
         return result
@@ -252,25 +233,68 @@ class SemanticAnalyzer:
     
     def _extract_parameters_from_text(self, param_text: str, result: Dict[str, Any]) -> None:
         """从文本中提取参数列表"""
-        # 检查是否有逗号分隔的参数
-        if "," in param_text or "，" in param_text:
-            params = param_text.replace("，", ",").split(",")
-            for param in params:
-                self._add_parameter(param.strip(), result)
-        else:
-            # 单个参数
-            self._add_parameter(param_text.strip(), result)
-    
+        # 替换所有可能的分隔符为英文逗号
+        separators = ["，", "、", "和", "与", "以及", "还有"]
+        processed_text = param_text
+        
+        # 处理"返回"之前的文本
+        if "返回" in processed_text:
+            processed_text = processed_text.split("返回")[0]
+        
+        # 替换分隔符
+        for sep in separators:
+            processed_text = processed_text.replace(sep, ",")
+        
+        # 分割参数并过滤空值
+        params = [p.strip() for p in processed_text.split(",") if p.strip()]
+        
+        # 处理可能的参数组合，比如"整数和字符串"
+        expanded_params = []
+        for param in params:
+            if any(type_text in param for type_text in self.data_type_patterns.keys()):
+                if current_param:
+                    merged_params.append(current_param)
+                current_param = param
+            else:
+                if current_param:
+                    current_param += param
+                else:
+                    current_param = param
+        
+        if current_param:
+            merged_params.append(current_param)
+        
+        # 处理合并后的参数
+        for param in merged_params:
+            if not param.strip():
+                continue
+                
+            # 检查是否包含数据类型关键词
+            found_type = False
+            for type_text, type_str in self.data_type_patterns.items():
+                if type_text in param and type_text not in processed_types:
+                    # 使用完整的参数文本作为描述
+                    self._add_parameter(param, result)
+                    processed_types.add(type_text)
+                    found_type = True
+                    break
+            
+            # 如果没有找到类型关键词，将整个参数文本作为一个参数
+            if not found_type and param not in processed_types:
+                self._add_parameter(param, result)
+                processed_types.add(param)
+                
     def _add_parameter(self, param_text: str, result: Dict[str, Any]) -> None:
         """添加单个参数到结果字典"""
         # 检查是否已经添加该参数
         for existing_param in result["parameters"]:
-            if param_text in existing_param["description"]:
+            if param_text.strip() in existing_param["description"]:
                 return
         
         param_type = self._infer_data_type(param_text)
         param_name = self._generate_param_name(param_text, len(result["parameters"]))
         
+        # 使用完整的参数文本作为描述
         result["parameters"].append({
             "name": param_name,
             "type": param_type,
@@ -300,10 +324,33 @@ class SemanticAnalyzer:
             return "Dict"
         elif any(word in text for word in ["列表", "数组", "集合", "list", "array"]):
             return "List"
-        elif any(word in text for word in ["布尔", "标志", "开关", "boolean", "flag"]):
+        elif any(word in text for word in ["布尔", "布尔值", "标志", "开关", "boolean", "flag"]):
             return "bool"
         elif any(word in text for word in ["数字", "整数", "数值", "int", "number"]):
             return "int"
+        elif any(word in text for word in ["名称", "名字", "标题", "描述", "内容", "文本", "信息", "消息", "备注"]):
+            return "str"
+        
+        # 如果参数名看起来像是字符串类型
+        string_patterns = [
+            r'name$',
+            r'title$',
+            r'desc$',
+            r'description$',
+            r'text$',
+            r'content$',
+            r'message$',
+            r'msg$',
+            r'note$',
+            r'comment$',
+            r'label$',
+            r'tag$',
+            r'key$',
+            r'code$',
+            r'status$'
+        ]
+        if any(re.search(pattern, text.lower()) for pattern in string_patterns):
+            return "str"
         
         return "Any"  # 默认类型
     
