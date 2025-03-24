@@ -1,0 +1,13 @@
+[workspace]
+authors = ["ZhangHaoCore <920364412@qq.com>"]
+channels = ["conda-forge"]
+name = "Qwen-Agent"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+python = ">=3.13.2,<3.14"
+black = ">=25.1.0,<26"
+flake8 = ">=7.1.2,<8"

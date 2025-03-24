@@ -44,3 +44,6 @@ tests/env.sh
 examples/data/*
 
 .env
+# pixi environments
+.pixi
+*.egg-info
