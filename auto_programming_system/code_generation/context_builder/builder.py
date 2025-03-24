@@ -33,6 +33,10 @@ class ContextBuilder:
         if "implementation" not in context:
             context["implementation"] = self._generate_implementation(specification)
         
+        # 确保function_description存在（与模板变量名匹配）
+        if "description" in context and "function_description" not in context:
+            context["function_description"] = context["description"]
+        
         return context
     
     def _generate_imports(self, specification: Dict[str, Any]) -> List[str]:
@@ -71,6 +75,7 @@ class ContextBuilder:
         Returns:
             函数实现代码
         """
-        # 这里只返回一个简单的占位实现
-        # 实际应用中，这部分应该基于规范生成真正的代码
-        return "# 实现函数逻辑\npass" 
+        # 返回空字符串，这样模板中的条件判断会生效
+        # 在实际代码生成时，模板会基于规范中的关键词生成代码
+        # 如"列表"+"偶数"+"和"会触发特定的代码模板
+        return "" 

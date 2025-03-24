@@ -35,7 +35,7 @@ def {{ function_name }}({% for param in parameters %}{{ param.name }}{% if param
     {{ implementation }}
     {% else %}
     # 实现函数逻辑
-    {% if 'list' in function_description and 'sum' in function_description %}
+    {% if ('list' in function_description or '列表' in function_description) and ('sum' in function_description or '和' in function_description) %}
     result = 0
     for item in {{ parameters[0].name }}:
         {% if 'even' in function_description or '偶数' in function_description %}
@@ -48,7 +48,7 @@ def {{ function_name }}({% for param in parameters %}{{ param.name }}{% if param
         result += item
         {% endif %}
     return result
-    {% elif 'list' in function_description and 'filter' in function_description %}
+    {% elif ('list' in function_description or '列表' in function_description) and ('filter' in function_description or '过滤' in function_description or '筛选' in function_description) %}
     result = []
     for item in {{ parameters[0].name }}:
         {% if 'even' in function_description or '偶数' in function_description %}
@@ -65,12 +65,22 @@ def {{ function_name }}({% for param in parameters %}{{ param.name }}{% if param
             result.append(item)
         {% endif %}
     return result
-    {% elif 'sort' in function_description %}
+    {% elif 'sort' in function_description or '排序' in function_description %}
     return sorted({{ parameters[0].name }})
-    {% elif 'convert' in function_description and ('celsius' in function_description or '摄氏' in function_description) and ('fahrenheit' in function_description or '华氏' in function_description) %}
+    {% elif ('convert' in function_description or '转换' in function_description) and ('celsius' in function_description or '摄氏' in function_description) and ('fahrenheit' in function_description or '华氏' in function_description) %}
+    {% if parameters and parameters|length > 0 %}
     return {{ parameters[0].name }} * 9/5 + 32
-    {% elif 'convert' in function_description and ('fahrenheit' in function_description or '华氏' in function_description) and ('celsius' in function_description or '摄氏' in function_description) %}
+    {% else %}
+    # 假设参数为celsius
+    return celsius * 9/5 + 32
+    {% endif %}
+    {% elif ('convert' in function_description or '转换' in function_description) and ('fahrenheit' in function_description or '华氏' in function_description) and ('celsius' in function_description or '摄氏' in function_description) %}
+    {% if parameters and parameters|length > 0 %}
     return ({{ parameters[0].name }} - 32) * 5/9
+    {% else %}
+    # 假设参数为fahrenheit
+    return (fahrenheit - 32) * 5/9
+    {% endif %}
     {% else %}
     # 通用实现
     pass
