@@ -78,6 +78,7 @@ graph TD
 ## 4. 关键接口
 
 ### 4.1 需求理解代理接口
+
 ```python
 class RequirementAgent:
     def clarify_requirement(self, text: str) -> Dict[str, Any]:
@@ -94,6 +95,7 @@ class RequirementAgent:
 ```
 
 ### 4.2 技术决策代理接口
+
 ```python
 class TechnicalAgent:
     def analyze_tech_stack(self, spec: Dict[str, Any]) -> Dict[str, Any]:
@@ -112,6 +114,7 @@ class TechnicalAgent:
 ## 5. 配置管理
 
 ### 5.1 代理配置
+
 ```yaml
 requirement_agent:
   model: "qwen-agent"
@@ -127,6 +130,7 @@ technical_agent:
 ```
 
 ### 5.2 知识库配置
+
 ```yaml
 knowledge_base:
   domain_patterns: "v2.0"
@@ -319,4 +323,4 @@ def infer_type(description: str) -> str:
 
 1. **歧义检测**：识别和解决需求中的歧义
 2. **信息不足处理**：检测并请求缺失信息
-3. **异常情况**：处理格式错误和无法解析的需求 
+3. **异常情况**：处理格式错误和无法解析的需求
