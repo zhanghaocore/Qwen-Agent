@@ -1,163 +1,159 @@
 # 全自动Python后端编程系统
 
-## 系统目标
+一个基于AI的自动编程系统，能够根据自然语言描述自动生成高质量的Python后端代码。
 
-实现自然语言到可执行Python代码的端到端转换，无需人工干预地将用户需求转化为高质量的Python后端代码。
+## 项目概述
 
-## 核心特性
+本项目是一个全自动的Python后端代码生成系统，采用模块化设计，包含以下核心功能：
 
-- **自然语言需求解析**：将非结构化文本转换为结构化编程任务
-- **多层次需求挖掘**：通过逐步推理深入分析复杂需求
-- **智能代码生成**：基于需求自动生成符合最佳实践的Python代码
-- **安全沙箱执行**：在隔离环境中验证生成代码的正确性和安全性
-- **迭代优化机制**：基于执行结果和性能指标不断改进生成的代码
-- **智能技术决策**：自动识别技术决策点并提供最优解决方案
-
-## 架构概览
-
-系统由四个核心模块组成，相互协作完成从需求到代码的转换过程：
-
-1. **需求分析系统**：解析自然语言，提取关键信息
-   - **基础分析**：基本的文本处理和需求解析
-   - **高级分析**：多层次需求挖掘和逐步推理
-2. **技术决策**：提供技术栈选择建议和备选方案分析
-   - **决策点识别**：自动识别需求中的技术决策点
-   - **选项生成**：基于决策点生成可行的技术选项
-   - **选项评估**：评估每个选项的优劣和适用性
-   - **决策记录**：记录和追踪技术决策过程
-3. **代码生成引擎**：根据结构化描述生成Python代码
-4. **执行验证环境**：在安全沙箱中测试和验证代码
-5. **迭代优化机制**：通过反馈循环持续改进代码质量
+- 需求分析：解析和结构化用户需求
+- 技术决策：选择合适的技术方案
+- 代码生成：生成高质量代码
+- 执行验证：验证代码正确性
+- 代码优化：持续改进代码质量
 
 ## 快速开始
 
+### 1. 环境准备
 ```bash
+# 创建并激活conda环境
+conda create -n qwen-agent python=3.8
+conda activate qwen-agent
+
 # 安装依赖
 pip install -r requirements.txt
-
-# 运行基本示例
-python -m auto_programming_system --input "创建一个处理CSV文件的函数，计算每列的平均值"
-
-# 高级用例（带约束）
-python -m auto_programming_system --input "开发一个REST API端点，接收JSON数据并存储到SQLite" --constraints "使用FastAPI,遵循SOLID原则"
-
-# 高级需求分析（使用逐步推理）
-python -m pytest auto_programming_system/tests/test_advanced_requirement_analysis.py
-
-# 运行技术决策测试
-python -m pytest auto_programming_system/tests/test_technical_decision.py
 ```
 
-## 使用场景
+### 2. 基本使用
+```python
+from auto_programming_system import AutoProgrammingSystem
 
-- **原型快速开发**：迅速将想法转化为可执行代码
-- **复杂需求分析**：深入理解和分解复杂的系统需求
-- **技术选型建议**：获取针对需求的技术栈推荐和架构建议
-- **教学辅助工具**：为编程学习者提供代码范例和解释
-- **自动化测试生成**：根据函数描述自动生成测试用例
-- **代码重构助手**：识别并优化现有代码中的问题
-- **技术决策支持**：自动识别和评估技术决策点
+# 创建系统实例
+system = AutoProgrammingSystem()
 
-## 文档
+# 输入需求
+requirements = """
+创建一个用户管理系统，包含：
+1. 用户注册和登录
+2. 个人信息管理
+3. 权限控制
+4. 数据持久化
+"""
 
-- [用户指南](docs/product/user-guide.md)：系统使用说明和最佳实践
-- [API参考](docs/api-reference.md)：详细的API文档和示例
-- [技术决策示例](docs/examples/technical_decision_examples.md)：技术决策模块的使用示例
-- [开发计划](docs/modules/requirement_analysis/development-plan.md)：项目开发计划和进度
+# 生成代码
+result = system.generate(requirements)
 
-## 目录结构
-
-```text
-auto_programming_system/
-├── agents/                    # 智能代理模块
-│   ├── base_agent.py         # 基础代理类
-│   ├── requirement_agent.py  # 需求分析代理
-│   ├── technical_agent.py    # 技术决策代理
-│   └── code_agent.py         # 代码生成代理
-├── requirement_analysis/      # 需求分析模块
-│   ├── basic_analysis/       # 基础分析
-│   └── advanced_analysis/    # 高级分析
-├── technical_decision/       # 技术决策模块
-│   ├── decision_point.py     # 决策点定义
-│   ├── option_generator.py   # 选项生成器
-│   ├── evaluator.py          # 选项评估器
-│   ├── recorder.py           # 决策记录器
-│   ├── validator.py          # 决策验证器
-│   └── README.md            # 模块文档
-├── code_generation/          # 代码生成模块
-│   ├── templates/           # 代码模板
-│   ├── generators/          # 生成器
-│   └── optimizers/          # 优化器
-├── execution/               # 执行验证模块
-│   ├── runner.py           # 代码运行器
-│   ├── validator.py        # 结果验证器
-│   └── profiler.py         # 性能分析器
-├── tests/                  # 测试目录
-│   ├── test_requirement_analysis/
-│   ├── test_technical_decision/
-│   └── test_code_generation/
-├── docs/                   # 文档目录
-│   ├── modules/           # 模块文档
-│   ├── api/               # API文档
-│   ├── product/           # 产品文档
-│   └── examples/          # 示例文档
-├── examples/              # 示例代码
-├── requirements.txt       # 项目依赖
-└── README.md             # 项目说明
+# 查看生成的代码
+print(result.code)
 ```
 
-## 特色功能
+## 文档结构
 
-### 多层次需求挖掘框架
+```
+docs/
+├── architecture/          # 架构文档
+│   ├── README.md         # 架构概述
+│   ├── core-modules.md   # 核心模块设计
+│   └── architecture-diagram.md  # 架构图
+├── development/          # 开发指南
+│   └── README.md         # 开发文档
+├── test_results/         # 测试文档
+│   └── README.md         # 测试报告
+├── examples/             # 示例文档
+│   └── README.md         # 使用示例
+├── product/              # 产品文档
+│   └── README.md         # 产品说明
+└── api-reference.md      # API参考
+```
 
-高级需求分析模块通过多层次需求挖掘框架，实现复杂需求的深入理解：
+## 核心模块
 
-1. **领域分类**：自动识别需求所属领域
-2. **关键问题提取**：基于领域知识提出关键问题
-3. **逐层推理**：每个答案触发更精细的子问题，不断深化理解
-4. **技术决策**：提供技术栈选择建议和备选方案分析
-5. **完整性检查**：确保所有必要需求维度都已覆盖
+### 1. 需求分析模块
+- 自然语言需求解析
+- 需求结构化处理
+- 需求完整性检查
 
-### 智能技术决策系统
+### 2. 技术决策模块
+- 技术栈选择
+- 架构设计
+- 依赖管理
 
-技术决策模块提供全面的决策支持：
+### 3. 代码生成模块
+- 模块化代码生成
+- 模板化代码生成
+- 代码风格统一
 
-1. **决策点识别**：
-   - 自动识别需求中的技术决策点
-   - 分析决策点之间的依赖关系
-   - 提取决策约束和上下文信息
+### 4. 执行验证模块
+- 代码语法检查
+- 单元测试生成
+- 性能测试
 
-2. **选项生成**：
-   - 基于决策点生成可行的技术选项
-   - 考虑项目规模和团队能力
-   - 支持自定义选项生成规则
+### 5. 优化模块
+- 性能优化
+- 代码重构
+- 最佳实践应用
 
-3. **选项评估**：
-   - 多维度评估（性能、可维护性、可扩展性）
-   - 考虑项目约束和团队能力
-   - 提供详细的评估理由和风险分析
+## 开发指南
 
-4. **决策记录**：
-   - 记录决策过程和理由
-   - 追踪决策历史
-   - 支持决策验证和审计
+详细的开发指南请参考 [开发文档](docs/development/README.md)，包含：
 
-## 开发状态
+- 环境搭建
+- 开发流程
+- 调试方法
+- 代码规范
+- 常见问题
 
-- **需求分析模块**：已完成基础功能，支持多层次需求挖掘
-- **技术决策模块**：已完成核心功能，测试覆盖率75%
-- **代码生成模块**：开发中，支持基本代码生成
-- **执行验证模块**：开发中，支持基本代码验证
+## 测试文档
+
+测试相关文档请参考 [测试文档](docs/test_results/README.md)，包含：
+
+- 测试策略
+- 测试用例
+- 测试结果
+- 测试报告
+
+## 示例文档
+
+使用示例请参考 [示例文档](docs/examples/README.md)，包含：
+
+- 快速开始
+- 功能示例
+- 最佳实践
+- 常见场景
+
+## 产品文档
+
+产品相关文档请参考 [产品文档](docs/product/README.md)，包含：
+
+- 产品概述
+- 功能特性
+- 使用场景
+- 产品优势
+
+## API参考
+
+API接口文档请参考 [API参考](docs/api-reference.md)，包含：
+
+- 核心API端点
+- 编程接口
+- WebSocket接口
+- CLI工具
 
 ## 贡献指南
 
-欢迎提交Issue和Pull Request来帮助改进系统。在提交代码前，请确保：
+欢迎提交Issue和Pull Request来帮助改进项目。在提交代码前，请确保：
 
-1. 所有测试通过
-2. 代码符合PEP 8规范
-3. 添加了必要的文档和注释
-4. 更新了相关的测试用例
+1. 代码符合项目规范
+2. 添加必要的测试
+3. 更新相关文档
+4. 提供清晰的提交信息
 
 ## 许可证
 
-MIT License
+本项目采用 MIT 许可证，详见 [LICENSE](LICENSE) 文件。
+
+## 联系方式
+
+- 项目主页：[GitHub](https://github.com/yourusername/auto-programming-system)
+- 问题反馈：[Issues](https://github.com/yourusername/auto-programming-system/issues)
+- 邮件联系：your.email@example.com
