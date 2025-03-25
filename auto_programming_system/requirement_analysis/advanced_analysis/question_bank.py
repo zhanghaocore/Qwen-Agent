@@ -203,6 +203,15 @@ class QuestionBankManager:
         """
         return [q for q in self.questions.values() if q.type == question_type]
     
+    def get_all_questions(self) -> List[Question]:
+        """
+        获取所有问题
+        
+        Returns:
+            所有问题的列表
+        """
+        return list(self.questions.values())
+    
     def get_questions_by_difficulty(self, difficulty: QuestionDifficulty) -> List[Question]:
         """
         获取指定难度的所有问题
