@@ -1,9 +1,11 @@
 # 全自动Python后端编程系统
 
 ## 系统目标
+
 实现自然语言到可执行Python代码的端到端转换，无需人工干预地将用户需求转化为高质量的Python后端代码。
 
 ## 核心特性
+
 - **自然语言需求解析**：将非结构化文本转换为结构化编程任务
 - **多层次需求挖掘**：通过逐步推理深入分析复杂需求
 - **智能代码生成**：基于需求自动生成符合最佳实践的Python代码
@@ -22,6 +24,7 @@
 4. **迭代优化机制**：通过反馈循环持续改进代码质量
 
 ## 快速开始
+
 ```bash
 # 安装依赖
 pip install -r requirements.txt
@@ -46,7 +49,8 @@ python -m pytest auto_programming_system/tests/test_advanced_requirement_analysi
 - **代码重构助手**：识别并优化现有代码中的问题
 
 ## 目录结构
-```
+
+```text
 auto_programming_system/
 ├── requirement_analysis/         # 需求分析模块
 │   ├── advanced_analysis/        # 高级需求分析模块（多层次需求挖掘）
