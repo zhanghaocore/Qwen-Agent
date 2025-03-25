@@ -4,8 +4,8 @@
 """
 
 import unittest
-from auto_programming_system.requirement_analysis.core import RequirementAnalyzer
-from auto_programming_system.code_generation.core import CodeGenerator
+from src.requirement_analysis.core import RequirementAnalyzer
+from src.code_generation.core import CodeGenerator
 
 
 class RequirementCodeIntegrationTest(unittest.TestCase):

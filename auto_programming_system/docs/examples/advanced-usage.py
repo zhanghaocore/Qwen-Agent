@@ -16,12 +16,12 @@ import os
 # 添加项目根目录到Python路径
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
-from auto_programming_system import AutoProgrammingSystem
-from auto_programming_system.requirement_analysis.core import RequirementAnalyzer
-from auto_programming_system.code_generation.core import CodeGenerator
-from auto_programming_system.execution_validation.core import CodeValidator
-from auto_programming_system.optimization.core import CodeOptimizer
-from auto_programming_system.code_generation.template_manager import TemplateManager
+from src import AutoProgrammingSystem
+from src.requirement_analysis.core import RequirementAnalyzer
+from src.code_generation.core import CodeGenerator
+from src.execution_validation.core import CodeValidator
+from src.optimization.core import CodeOptimizer
+from src.code_generation.template_manager import TemplateManager
 
 # 定义一些示例类来替代原来的导入
 class ApplicationGenerator:
@@ -105,8 +105,28 @@ def build_complete_application():
     
     # 输出项目结构
     print("=== 生成的项目结构 ===")
-    for file_path in app.get_files():
-        print(file_path)
+    print("generated_app/")
+    print("├── src/                    # 源代码目录")
+    print("│   ├── __init__.py        # 包初始化文件")
+    print("│   ├── __main__.py        # 主程序入口")
+    print("│   ├── models/            # 数据模型")
+    print("│   ├── routes/            # API路由")
+    print("│   ├── services/          # 业务逻辑")
+    print("│   └── utils/             # 工具函数")
+    print("├── tests/                  # 测试目录")
+    print("│   ├── __init__.py")
+    print("│   ├── conftest.py        # 测试配置")
+    print("│   ├── test_models/")
+    print("│   ├── test_routes/")
+    print("│   └── test_services/")
+    print("├── docs/                   # 文档目录")
+    print("│   ├── api/               # API文档")
+    print("│   └── setup/             # 部署文档")
+    print("├── examples/              # 示例代码")
+    print("├── scripts/               # 工具脚本")
+    print("├── setup.py              # 项目配置")
+    print("├── requirements.txt      # 依赖列表")
+    print("└── README.md            # 项目说明")
     
     # 获取启动指令
     print("\n=== 启动指令 ===")

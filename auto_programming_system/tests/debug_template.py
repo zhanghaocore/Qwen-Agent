@@ -9,8 +9,8 @@ import jinja2
 # 将项目根目录添加到sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from auto_programming_system.code_generation.context_builder.builder import ContextBuilder
-from auto_programming_system.code_generation.template_engine.engine import SmartTemplateEngine
+from src.code_generation.context_builder.builder import ContextBuilder
+from src.code_generation.template_engine.engine import SmartTemplateEngine
 
 
 def debug_rendering():

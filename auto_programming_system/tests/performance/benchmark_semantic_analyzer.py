@@ -9,10 +9,10 @@ import pytest
 from pathlib import Path
 from typing import List, Dict, Any
 
-from auto_programming_system.requirement_analysis.semantic_analyzer.analyzer import SemanticAnalyzer
-from auto_programming_system.requirement_analysis.semantic_analyzer.parameter_extractor import ParameterExtractor
-from auto_programming_system.requirement_analysis.semantic_analyzer.type_inference import TypeInferenceSystem
-from auto_programming_system.requirement_analysis.semantic_analyzer.requirement_analyzer import RequirementAnalyzer
+from src.requirement_analysis.semantic_analyzer.analyzer import SemanticAnalyzer
+from src.requirement_analysis.semantic_analyzer.parameter_extractor import ParameterExtractor
+from src.requirement_analysis.semantic_analyzer.type_inference import TypeInferenceSystem
+from src.requirement_analysis.semantic_analyzer.requirement_analyzer import RequirementAnalyzer
 
 from . import (
     PerformanceMetrics,

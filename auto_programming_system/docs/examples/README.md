@@ -6,7 +6,7 @@
 
 ### 1. 基础示例
 ```python
-from auto_programming_system import AutoProgrammingSystem
+from src import AutoProgrammingSystem
 
 # 创建系统实例
 system = AutoProgrammingSystem()
@@ -32,7 +32,7 @@ print(result.report)
 
 ### 2. 高级配置
 ```python
-from auto_programming_system import AutoProgrammingSystem, Config
+from src import AutoProgrammingSystem, Config
 
 # 创建配置
 config = Config(
@@ -164,8 +164,8 @@ config = Config(
 
 ### 3. 错误处理
 ```python
-from auto_programming_system import AutoProgrammingSystem, Config
-from auto_programming_system.exceptions import GenerationError
+from src import AutoProgrammingSystem, Config
+from src.exceptions import GenerationError
 
 try:
     system = AutoProgrammingSystem()

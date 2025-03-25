@@ -49,7 +49,7 @@
 ## 使用示例
 
 ```python
-from auto_programming_system.requirement_analysis import RequirementAnalyzer
+from src.requirement_analysis import RequirementAnalyzer
 
 # 创建分析器实例
 analyzer = RequirementAnalyzer()

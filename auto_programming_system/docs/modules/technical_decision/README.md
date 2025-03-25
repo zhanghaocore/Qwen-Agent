@@ -39,7 +39,7 @@
 ## 使用示例
 
 ```python
-from auto_programming_system.agents.technical_decision import TechnicalDecisionAgent
+from src.agents.technical_decision import TechnicalDecisionAgent
 
 # 创建技术决策代理
 agent = TechnicalDecisionAgent()

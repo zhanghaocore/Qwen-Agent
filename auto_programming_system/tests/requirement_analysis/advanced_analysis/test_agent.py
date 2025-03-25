@@ -14,7 +14,7 @@ current_dir = Path(__file__).parent
 project_root = current_dir.parent.parent.parent
 sys.path.append(str(project_root))
 
-from auto_programming_system.requirement_analysis.advanced_analysis import (
+from src.requirement_analysis.advanced_analysis import (
     StepByStepRequirementAnalysisAgent,
     DomainClassifierTool,
     QuestionGeneratorTool,

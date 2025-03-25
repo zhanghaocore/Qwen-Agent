@@ -1,14 +1,14 @@
 import pytest
 import os
 from typing import Dict, Any
-from auto_programming_system.agents import (
+from src.agents import (
     BaseAgent,
     RequirementAgent,
     TechnicalAgent,
     SpecificationAgent,
     KnowledgeManager
 )
-from auto_programming_system.agents.config import (
+from src.agents.config import (
     REQUIREMENT_AGENT_CONFIG,
     TECHNICAL_AGENT_CONFIG,
     SPECIFICATION_AGENT_CONFIG,

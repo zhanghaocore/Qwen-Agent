@@ -44,7 +44,7 @@
 ## 使用示例
 
 ```python
-from auto_programming_system.execution_validation import CodeValidator
+from src.execution_validation import CodeValidator
 
 # 创建验证器实例
 validator = CodeValidator()

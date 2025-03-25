@@ -44,7 +44,7 @@
 ## 使用示例
 
 ```python
-from auto_programming_system.optimization import CodeOptimizer
+from src.optimization import CodeOptimizer
 
 # 创建优化器实例
 optimizer = CodeOptimizer()

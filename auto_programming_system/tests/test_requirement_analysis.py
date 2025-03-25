@@ -3,7 +3,7 @@
 """
 
 import unittest
-from auto_programming_system.requirement_analysis.core import RequirementAnalyzer
+from src.requirement_analysis.core import RequirementAnalyzer
 
 
 class RequirementAnalyzerTest(unittest.TestCase):

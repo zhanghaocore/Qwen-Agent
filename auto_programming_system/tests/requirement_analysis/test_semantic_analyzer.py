@@ -4,7 +4,7 @@
 """
 
 import unittest
-from auto_programming_system.requirement_analysis.semantic_analyzer.analyzer import SemanticAnalyzer
+from src.requirement_analysis.semantic_analyzer.analyzer import SemanticAnalyzer
 
 
 class SemanticAnalyzerTest(unittest.TestCase):

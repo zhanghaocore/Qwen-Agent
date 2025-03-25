@@ -44,7 +44,7 @@
 ## 使用示例
 
 ```python
-from auto_programming_system.code_generation import CodeGenerator
+from src.code_generation import CodeGenerator
 
 # 创建生成器实例
 generator = CodeGenerator()

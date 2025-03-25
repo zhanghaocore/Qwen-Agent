@@ -4,7 +4,7 @@
 
 import unittest
 import json
-from auto_programming_system import AutoProgrammingSystem
+from src import AutoProgrammingSystem
 
 
 class IntegrationTest(unittest.TestCase):

@@ -9,11 +9,11 @@ import pytest
 from pathlib import Path
 from typing import List, Dict, Any
 
-from auto_programming_system.requirement_analysis.preprocessor.preprocessor import TextPreprocessor
-from auto_programming_system.requirement_analysis.preprocessor.text_cleaner import TextCleaner
-from auto_programming_system.requirement_analysis.preprocessor.sentence_splitter import SentenceSplitter
-from auto_programming_system.requirement_analysis.preprocessor.term_extractor import TermExtractor
-from auto_programming_system.requirement_analysis.preprocessor.text_normalizer import TextNormalizer
+from src.requirement_analysis.preprocessor.preprocessor import TextPreprocessor
+from src.requirement_analysis.preprocessor.text_cleaner import TextCleaner
+from src.requirement_analysis.preprocessor.sentence_splitter import SentenceSplitter
+from src.requirement_analysis.preprocessor.term_extractor import TermExtractor
+from src.requirement_analysis.preprocessor.text_normalizer import TextNormalizer
 
 from . import (
     PerformanceMetrics,

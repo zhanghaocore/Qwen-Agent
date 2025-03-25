@@ -3,7 +3,7 @@
 """
 
 import pytest
-from auto_programming_system.requirement_analysis.advanced_analysis.tools import DomainClassifierTool
+from src.requirement_analysis.advanced_analysis.tools import DomainClassifierTool
 
 @pytest.fixture
 def classifier():

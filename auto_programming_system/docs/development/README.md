@@ -19,18 +19,45 @@ pip install -r requirements.txt
 - Git
 - Docker (可选，用于容器化部署)
 
-### 3. 项目结构
+## 项目结构
+
 ```
 auto_programming_system/
 ├── src/                    # 源代码目录
+│   ├── __init__.py        # 包初始化文件
+│   ├── __main__.py        # 主程序入口
+│   ├── common/            # 公共组件
+│   ├── agents/            # AI代理
 │   ├── requirement_analysis/  # 需求分析模块
 │   ├── technical_decision/    # 技术决策模块
 │   ├── code_generation/       # 代码生成模块
 │   ├── execution_validation/  # 执行验证模块
 │   └── optimization/          # 优化模块
 ├── tests/                  # 测试目录
+│   ├── __init__.py
+│   ├── conftest.py        # 测试配置
+│   ├── test_requirement_analysis/
+│   ├── test_technical_decision/
+│   ├── test_code_generation/
+│   ├── test_execution_validation/
+│   └── test_optimization/
 ├── docs/                   # 文档目录
-└── examples/               # 示例目录
+│   ├── architecture/       # 架构文档
+│   ├── api_reference/     # API参考
+│   ├── development/       # 开发指南
+│   ├── examples/         # 示例文档
+│   ├── modules/          # 模块文档
+│   ├── product/          # 产品文档
+│   └── test_results/     # 测试结果
+├── examples/              # 示例代码
+│   ├── basic_usage/
+│   ├── advanced_features/
+│   └── integration/
+├── scripts/               # 工具脚本
+├── setup.py              # 项目配置
+├── requirements.txt      # 依赖列表
+├── requirements-dev.txt  # 开发依赖
+└── README.md            # 项目说明
 ```
 
 ## 开发流程
