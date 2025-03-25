@@ -6,6 +6,7 @@
 from typing import Dict, List, Any, Optional
 import json
 import re
+from difflib import SequenceMatcher
 
 
 class DomainClassifierTool:
@@ -26,111 +27,82 @@ class DomainClassifierTool:
             "web应用": {
                 "基础特征": [
                     "网站", "前端", "后端", "页面", "UI", "网页", "浏览器",
-                    "响应式", "单页面", "多页面", "网站", "门户"
+                    "响应式", "单页面", "多页面", "网站", "门户", "电商",
+                    "博客", "论坛", "社区", "内容管理", "CMS", "企业官网"
                 ],
                 "功能特征": [
                     "认证", "授权", "登录", "注册", "表单", "搜索",
-                    "上传", "下载", "评论", "分享", "支付"
+                    "上传", "下载", "评论", "分享", "支付", "购物车",
+                    "订单", "会员", "积分", "优惠券", "商品管理", "库存管理"
                 ],
                 "技术特征": [
                     "SEO", "CDN", "缓存", "会话", "Cookie", "HTTPS",
-                    "API", "WebSocket", "前后端分离"
+                    "API", "WebSocket", "前后端分离", "微服务", "容器化",
+                    "CI/CD", "自动化部署", "监控告警", "日志分析", "性能优化"
                 ],
                 "展示特征": [
                     "数据展示", "图表", "仪表盘", "列表", "表格",
-                    "菜单", "导航", "轮播", "布局"
+                    "菜单", "导航", "轮播", "布局", "响应式设计",
+                    "移动适配", "暗黑模式", "主题切换", "动画效果"
                 ],
                 "用户体验": [
                     "交互", "动画", "主题", "多语言", "国际化",
-                    "本地化", "自适应", "移动优先"
+                    "本地化", "自适应", "移动优先", "无障碍", "性能优化",
+                    "加载优化", "错误处理", "用户反馈", "操作引导"
                 ]
             },
             "数据处理": {
                 "基础特征": [
                     "数据", "分析", "处理", "统计", "报表", "图表",
-                    "excel", "计算", "汇总"
+                    "excel", "计算", "汇总", "ETL", "数据仓库", "数据湖",
+                    "数据治理", "数据质量", "数据安全", "数据挖掘"
                 ],
                 "处理类型": [
                     "数据清洗", "ETL", "转换", "过滤", "聚合",
-                    "归一化", "标准化", "去重", "合并"
+                    "归一化", "标准化", "去重", "合并", "数据脱敏",
+                    "数据加密", "数据压缩", "数据备份", "数据恢复"
                 ],
                 "分析功能": [
                     "数据挖掘", "预测分析", "统计分析", "相关性分析",
-                    "趋势分析", "异常检测", "模式识别"
+                    "趋势分析", "异常检测", "模式识别", "机器学习",
+                    "深度学习", "自然语言处理", "计算机视觉", "推荐系统"
                 ],
                 "可视化": [
                     "数据可视化", "报表生成", "图表展示", "仪表板",
-                    "实时监控", "趋势图", "散点图", "热力图"
+                    "实时监控", "趋势图", "散点图", "热力图", "地图",
+                    "3D可视化", "交互式图表", "动态报表", "自定义报表"
                 ],
                 "数据特征": [
                     "实时数据", "历史数据", "结构化数据", "非结构化数据",
-                    "时序数据", "流数据", "批量数据"
+                    "时序数据", "流数据", "批量数据", "大数据", "高维数据",
+                    "稀疏数据", "缺失数据", "噪声数据", "多源数据"
                 ]
             },
             "API服务": {
                 "基础特征": [
                     "API", "接口", "服务", "微服务", "端点", "REST",
-                    "HTTP", "RPC", "WebService"
+                    "HTTP", "RPC", "WebService", "网关", "服务网格",
+                    "API网关", "服务编排", "服务治理", "服务注册"
                 ],
                 "服务特性": [
                     "认证", "授权", "限流", "熔断", "降级", "负载均衡",
-                    "服务发现", "配置中心"
+                    "服务发现", "配置中心", "服务监控", "链路追踪",
+                    "性能分析", "错误处理", "重试机制", "超时控制"
                 ],
                 "接口特征": [
                     "RESTful", "GraphQL", "SOAP", "gRPC", "WebSocket",
-                    "异步", "实时", "批量"
+                    "异步", "实时", "批量", "流式", "长连接", "短连接",
+                    "心跳检测", "断线重连", "消息队列", "事件驱动"
                 ],
                 "安全特征": [
                     "加密", "签名", "令牌", "OAuth", "JWT", "HTTPS",
-                    "SSL", "TLS"
+                    "SSL", "TLS", "防重放", "防篡改", "防注入",
+                    "访问控制", "审计日志", "安全扫描", "漏洞检测"
                 ],
                 "管理特征": [
                     "监控", "日志", "追踪", "文档", "测试", "版本",
-                    "部署", "网关"
-                ]
-            },
-            "人工智能": {
-                "基础特征": [
-                    "AI", "机器学习", "深度学习", "神经网络", "智能",
-                    "算法", "模型"
-                ],
-                "应用场景": [
-                    "分类", "预测", "识别", "生成", "推荐", "优化",
-                    "决策", "规划"
-                ],
-                "技术特征": [
-                    "训练", "推理", "特征工程", "模型评估", "调优",
-                    "验证", "部署"
-                ],
-                "数据特征": [
-                    "标注数据", "训练集", "测试集", "验证集", "样本",
-                    "特征", "标签"
-                ],
-                "领域特征": [
-                    "计算机视觉", "自然语言处理", "语音识别", "推荐系统",
-                    "强化学习", "知识图谱"
-                ]
-            },
-            "移动应用": {
-                "基础特征": [
-                    "APP", "移动", "iOS", "Android", "手机", "平板",
-                    "客户端"
-                ],
-                "功能特征": [
-                    "离线存储", "推送通知", "定位服务", "传感器",
-                    "相机", "扫码", "分享"
-                ],
-                "用户体验": [
-                    "手势", "动画", "主题", "暗黑模式", "自适应",
-                    "响应式", "原生体验"
-                ],
-                "技术特征": [
-                    "混合开发", "原生开发", "跨平台", "热更新",
-                    "性能优化", "安全加密"
-                ],
-                "集成特征": [
-                    "社交集成", "支付集成", "地图集成", "云服务",
-                    "第三方登录", "分享"
+                    "部署", "网关", "限流", "熔断", "降级", "重试",
+                    "超时", "负载均衡", "服务发现", "配置管理"
                 ]
             }
         }
@@ -139,76 +111,373 @@ class DomainClassifierTool:
         self.general_features = {
             "性能需求": [
                 "高性能", "低延迟", "高并发", "实时", "响应时间",
-                "吞吐量", "负载", "性能指标"
+                "吞吐量", "负载", "性能指标", "QPS", "TPS", "IOPS",
+                "CPU使用率", "内存使用", "网络带宽", "磁盘IO"
             ],
             "安全需求": [
                 "安全", "加密", "认证", "授权", "审计", "防攻击",
-                "数据安全", "访问控制"
+                "数据安全", "访问控制", "漏洞扫描", "入侵检测",
+                "防火墙", "WAF", "DDoS防护", "数据脱敏"
             ],
             "可靠性": [
                 "高可用", "容错", "备份", "恢复", "监控", "告警",
-                "日志", "追踪"
+                "日志", "追踪", "故障转移", "负载均衡", "服务降级",
+                "熔断", "限流", "重试", "超时"
             ],
             "扩展性": [
                 "可扩展", "模块化", "插件", "微服务", "分布式",
-                "集群", "水平扩展", "垂直扩展"
+                "集群", "水平扩展", "垂直扩展", "服务网格",
+                "容器化", "云原生", "弹性伸缩", "负载均衡"
             ],
             "维护性": [
                 "易维护", "文档", "测试", "部署", "版本控制",
-                "持续集成", "持续部署"
+                "持续集成", "持续部署", "自动化", "监控告警",
+                "日志分析", "性能分析", "问题诊断", "运维管理"
             ]
+        }
+        
+        # 定义领域特征权重
+        self.domain_weights = {
+            "web应用": {
+                "基础特征": 1.0,
+                "功能特征": 0.9,
+                "技术特征": 0.8,
+                "展示特征": 0.7,
+                "用户体验": 0.8
+            },
+            "数据处理": {
+                "基础特征": 1.0,
+                "处理类型": 0.9,
+                "分析功能": 0.8,
+                "可视化": 0.7,
+                "数据特征": 0.9
+            },
+            "API服务": {
+                "基础特征": 1.0,
+                "服务特性": 0.9,
+                "接口特征": 0.8,
+                "安全特征": 0.7,
+                "管理特征": 0.6
+            }
+        }
+        
+        # 定义匹配策略权重
+        self.match_strategy_weights = {
+            "exact_match": 1.0,
+            "word_match": 0.8,
+            "edit_distance": 0.6,
+            "keyword_match": 0.7,
+            "semantic_match": 0.5
         }
     
     def call(self, params: str, **kwargs) -> str:
         """执行领域分类"""
         try:
-            params_dict = json.loads(params)
-            requirement_text = params_dict.get('requirement_text', '')
+            # 验证输入参数
+            if not params or not isinstance(params, str):
+                raise ValueError("输入参数不能为空且必须是字符串")
             
+            # 解析JSON
+            try:
+                params_dict = json.loads(params)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"输入参数必须是有效的JSON格式: {str(e)}")
+            
+            # 验证必要参数
+            if 'requirement_text' not in params_dict:
+                raise ValueError("缺少必要参数：requirement_text")
+            
+            requirement_text = params_dict['requirement_text']
+            if not isinstance(requirement_text, str):
+                raise ValueError("requirement_text必须是字符串类型")
+            
+            # 执行领域分类
             domains = self._classify_domain(requirement_text)
             
+            # 提取关键特征
+            key_features = self._extract_key_features(requirement_text, domains)
+            
             return json.dumps({
-                'primary_domain': domains[0],
-                'secondary_domains': domains[1:],
-                'key_features': self._extract_key_features(requirement_text, domains[0])
+                'primary_domain': domains[0] if domains else None,
+                'secondary_domains': domains[1:] if len(domains) > 1 else [],
+                'key_features': key_features
             }, ensure_ascii=False)
             
         except Exception as e:
-            return f"领域分类过程出错: {str(e)}"
+            raise ValueError(str(e))
     
     def _classify_domain(self, text: str) -> List[str]:
-        """分析文本并返回领域分类结果"""
-        domains = []
+        """分析文本并返回领域分类结果
         
-        keywords = {
-            "web应用": ["网站", "前端", "后端", "页面", "UI", "网页", "浏览器"],
-            "数据处理": ["数据", "分析", "处理", "统计", "报表", "图表", "excel"],
-            "API服务": ["API", "接口", "服务", "微服务", "端点", "REST", "HTTP"],
-            "移动应用": ["APP", "移动", "iOS", "Android", "手机", "平板"],
-            "人工智能": ["AI", "机器学习", "深度学习", "模型", "训练", "预测", "智能"],
-            "数据库": ["数据库", "存储", "SQL", "NoSQL", "表", "查询"],
-            "爬虫": ["爬虫", "抓取", "采集", "提取", "网页数据"]
+        Args:
+            text: 需求文本
+            
+        Returns:
+            按置信度排序的领域列表
+        """
+        # 计算每个领域的得分
+        domain_scores = {}
+        text_lower = text.lower()
+        
+        # 预处理：检查强特征词
+        strong_features = {
+            "web应用": ["网站", "前端", "页面", "ui", "web", "电商", "商城", "购物", "商品", "界面", "展示", "平台"],
+            "数据处理": ["数据分析", "数据处理", "数据挖掘", "etl", "数据清洗", "数据统计", "可视化", "报表"],
+            "API服务": ["api", "接口", "微服务", "服务", "restful", "rpc"]
         }
         
-        text_lower = text.lower()
-        for domain, words in keywords.items():
-            for word in words:
-                if word.lower() in text_lower:
-                    if domain not in domains:
-                        domains.append(domain)
+        # 根据强特征词初步判断领域
+        initial_domains = []
+        domain_feature_counts = {}  # 记录每个领域匹配的特征数量
         
-        # 如果没有匹配到任何领域，返回通用应用
-        if not domains:
-            domains = ["通用应用"]
+        for domain, features in strong_features.items():
+            matched_features = [feature for feature in features if feature in text_lower]
+            if matched_features:
+                initial_domains.append(domain)
+                domain_feature_counts[domain] = len(matched_features)
+        
+        # 如果找到多个领域，设置较低的阈值
+        threshold = 0.02 if len(initial_domains) > 1 else 0.04
+        
+        # 特殊处理：Web应用和数据处理的组合场景
+        if "web应用" in initial_domains and "数据处理" in initial_domains:
+            web_features = ["界面", "展示", "前端", "页面", "平台"]
+            data_features = ["数据分析", "数据处理", "数据挖掘", "可视化"]
             
+            web_count = sum(1 for f in web_features if f in text_lower)
+            data_count = sum(1 for f in data_features if f in text_lower)
+            
+            # 如果Web特征更显著，将其设为主要领域
+            if web_count >= data_count:
+                initial_domains.remove("web应用")
+                initial_domains.append("web应用")  # 将Web应用放在最后，提高其权重
+        
+        for domain, features in self.feature_patterns.items():
+            domain_score = 0
+            total_weight = 0
+            feature_counts = {}  # 记录每个类别的特征匹配数
+            
+            for category, patterns in features.items():
+                category_weight = self.domain_weights.get(domain, {}).get(category, 0.5)
+                category_score = 0
+                matched_features = 0
+                
+                for pattern in patterns:
+                    pattern_lower = pattern.lower()
+                    # 使用多种匹配策略
+                    if pattern_lower in text_lower:  # 直接匹配
+                        matched_features += 1
+                        category_score += self.match_strategy_weights["exact_match"]
+                    elif self._fuzzy_match(pattern_lower, text_lower):  # 模糊匹配
+                        matched_features += 1
+                        category_score += self._calculate_match_score(pattern_lower, text_lower)
+                
+                # 记录特征匹配数
+                feature_counts[category] = matched_features
+                
+                # 归一化类别得分
+                if patterns:
+                    category_score = (category_score / len(patterns)) * category_weight
+                    domain_score += category_score
+                    total_weight += category_weight
+            
+            # 计算特征覆盖率
+            coverage_score = self._calculate_coverage_score(feature_counts, domain)
+            
+            # 归一化领域得分
+            if total_weight > 0:
+                domain_score = (domain_score / total_weight) * (1 + coverage_score)
+                # 如果是初步判断的领域，根据匹配的特征数量提高得分
+                if domain in initial_domains:
+                    feature_count_bonus = domain_feature_counts.get(domain, 1)
+                    domain_score *= (1 + 0.2 * feature_count_bonus)
+                domain_scores[domain] = domain_score
+        
+        # 按得分排序并返回领域列表
+        sorted_domains = sorted(
+            domain_scores.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )
+        
+        # 返回得分大于阈值的领域
+        domains = [domain for domain, score in sorted_domains if score > threshold]
+        
+        # 如果没有匹配到任何领域，根据关键词判断返回默认领域
+        if not domains:
+            if any(kw in text_lower for kw in ["数据分析", "数据处理", "数据挖掘", "etl", "数据清洗", "可视化", "报表"]):
+                return ["数据处理"]
+            elif any(kw in text_lower for kw in ["api", "接口", "微服务", "restful", "rpc"]):
+                return ["API服务"]
+            else:
+                return ["web应用"]
+        
+        # 如果是Web应用和数据处理的组合场景，确保两个领域都被返回
+        if "web应用" in initial_domains and "数据处理" in initial_domains:
+            if "web应用" in domains and "数据处理" not in domains:
+                domains.append("数据处理")
+            elif "数据处理" in domains and "web应用" not in domains:
+                domains.append("web应用")
+        
         return domains
     
-    def _extract_key_features(self, text: str, domain: str) -> List[str]:
+    def _fuzzy_match(self, pattern: str, text: str) -> bool:
+        """使用多种匹配策略检查模式是否在文本中
+        
+        Args:
+            pattern: 要匹配的模式
+            text: 要搜索的文本
+            
+        Returns:
+            是否匹配成功
+        """
+        # 1. 完全匹配
+        if pattern in text:
+            return True
+            
+        # 2. 分词匹配
+        pattern_words = set(pattern.split())
+        text_words = set(text.split())
+        if len(pattern_words) > 0 and pattern_words.issubset(text_words):
+            return True
+            
+        # 3. 编辑距离匹配
+        similarity = SequenceMatcher(None, pattern, text).ratio()
+        if similarity > 0.6:  # 降低相似度阈值
+            return True
+            
+        # 4. 关键词匹配
+        pattern_keywords = set(word for word in pattern.split() if len(word) > 1)
+        text_keywords = set(word for word in text.split() if len(word) > 1)
+        if len(pattern_keywords) > 0 and pattern_keywords.issubset(text_keywords):
+            return True
+            
+        # 5. 语义匹配
+        if self._semantic_match(pattern, text):
+            return True
+            
+        return False
+    
+    def _semantic_match(self, pattern: str, text: str) -> bool:
+        """使用语义相似度进行匹配
+        
+        Args:
+            pattern: 要匹配的模式
+            text: 要搜索的文本
+            
+        Returns:
+            是否匹配成功
+        """
+        # 扩展同义词词典
+        synonyms = {
+            # Web应用领域
+            "网站": ["web", "网站", "网页", "门户", "站点", "平台", "系统", "商城", "商店", "商务"],
+            "电商": ["电商", "商城", "购物", "商店", "网店", "在线商城", "网上商城"],
+            "商品": ["商品", "产品", "货物", "物品", "商品", "货品", "商品"],
+            "会员": ["会员", "用户", "客户", "消费者", "买家", "顾客", "访客"],
+            "订单": ["订单", "交易", "购买", "下单", "结算", "支付"],
+            
+            # 数据处理领域
+            "数据": ["数据", "信息", "资料", "记录", "内容", "资源", "资产"],
+            "分析": ["分析", "统计", "计算", "评估", "研究", "挖掘", "处理"],
+            "处理": ["处理", "加工", "转换", "清洗", "整理", "过滤", "提取"],
+            "报表": ["报表", "报告", "图表", "统计表", "分析表", "数据表"],
+            "挖掘": ["挖掘", "发现", "提取", "分析", "研究", "探索"],
+            
+            # API服务领域
+            "接口": ["接口", "api", "服务", "endpoint", "服务端点", "调用点"],
+            "服务": ["服务", "微服务", "接口", "功能", "能力", "组件"],
+            "认证": ["认证", "鉴权", "验证", "授权", "登录", "身份验证"],
+            "安全": ["安全", "加密", "保护", "防护", "防御", "保障"],
+            "监控": ["监控", "观察", "追踪", "检测", "诊断", "分析"]
+        }
+        
+        # 将模式转换为同义词集合
+        pattern_synonyms = set()
+        for word in pattern.split():
+            word = word.lower()
+            if word in synonyms:
+                pattern_synonyms.update(synonyms[word])
+            else:
+                pattern_synonyms.add(word)
+        
+        # 检查文本中是否包含任何同义词
+        text_words = set(text.split())
+        return bool(pattern_synonyms & text_words)  # 使用集合交集
+    
+    def _calculate_match_score(self, pattern: str, text: str) -> float:
+        """计算匹配得分
+        
+        Args:
+            pattern: 匹配模式
+            text: 目标文本
+            
+        Returns:
+            匹配得分
+        """
+        # 1. 完全匹配
+        if pattern in text:
+            return self.match_strategy_weights["exact_match"]
+            
+        # 2. 分词匹配
+        pattern_words = set(pattern.split())
+        text_words = set(text.split())
+        if len(pattern_words) > 0 and pattern_words.issubset(text_words):
+            return self.match_strategy_weights["word_match"]
+            
+        # 3. 编辑距离匹配
+        similarity = SequenceMatcher(None, pattern, text).ratio()
+        if similarity > 0.6:  # 降低相似度阈值
+            return self.match_strategy_weights["edit_distance"]
+            
+        # 4. 关键词匹配
+        pattern_keywords = set(word for word in pattern.split() if len(word) > 1)
+        text_keywords = set(word for word in text.split() if len(word) > 1)
+        if len(pattern_keywords) > 0 and pattern_keywords.issubset(text_keywords):
+            return self.match_strategy_weights["keyword_match"]
+            
+        # 5. 语义匹配
+        if self._semantic_match(pattern, text):
+            return self.match_strategy_weights["semantic_match"]
+            
+        return 0.0
+    
+    def _calculate_coverage_score(self, feature_counts: Dict[str, int], domain: str) -> float:
+        """计算特征覆盖率得分
+        
+        Args:
+            feature_counts: 每个类别的特征匹配数
+            domain: 当前计算的领域
+            
+        Returns:
+            覆盖率得分
+        """
+        if not feature_counts:
+            return 0.0
+            
+        # 计算每个类别的覆盖率
+        coverage_scores = []
+        domain_features = self.feature_patterns.get(domain, {})
+        
+        for category, count in feature_counts.items():
+            if category in domain_features:
+                total_features = len(domain_features[category])
+                if total_features > 0:
+                    coverage = count / total_features
+                    coverage_scores.append(coverage)
+        
+        # 计算平均覆盖率
+        if coverage_scores:
+            return sum(coverage_scores) / len(coverage_scores)
+        
+        return 0.0
+    
+    def _extract_key_features(self, text: str, domains: List[str]) -> List[str]:
         """根据领域提取需求中的关键特征
         
         Args:
             text: 需求文本
-            domain: 识别出的主要领域
+            domains: 识别出的领域列表
             
         Returns:
             提取出的关键特征列表
@@ -217,18 +486,41 @@ class DomainClassifierTool:
         text_lower = text.lower()
         
         # 1. 提取领域特定特征
-        if domain in self.feature_patterns:
-            domain_patterns = self.feature_patterns[domain]
-            for category, patterns in domain_patterns.items():
-                for pattern in patterns:
-                    if pattern.lower() in text_lower:
-                        features.append(f"{category}:{pattern}")
+        for domain in domains:
+            if domain in self.feature_patterns:
+                domain_patterns = self.feature_patterns[domain]
+                for category, patterns in domain_patterns.items():
+                    category_features = []
+                    for pattern in patterns:
+                        pattern_lower = pattern.lower()
+                        if pattern_lower in text_lower or self._fuzzy_match(pattern_lower, text_lower):
+                            category_features.append(pattern)
+                    if category_features:
+                        # 对于数据处理领域，特别处理分析功能和可视化
+                        if domain == "数据处理":
+                            if category == "基础特征":
+                                # 处理分析功能
+                                analysis_features = [f for f in category_features if "分析" in f.lower()]
+                                if analysis_features:
+                                    features.append(f"{domain}-分析功能:{','.join(analysis_features)}")
+                                    category_features = [f for f in category_features if "分析" not in f.lower()]
+                                # 处理可视化功能
+                                visual_features = [f for f in category_features if any(kw in f.lower() for kw in ["可视化", "展示", "报表"])]
+                                if visual_features:
+                                    features.append(f"{domain}-可视化功能:{','.join(visual_features)}")
+                                    category_features = [f for f in category_features if not any(kw in f.lower() for kw in ["可视化", "展示", "报表"])]
+                        if category_features:  # 确保还有其他特征
+                            features.append(f"{domain}-{category}:{','.join(category_features)}")
         
         # 2. 提取通用特征
         for category, patterns in self.general_features.items():
+            category_features = []
             for pattern in patterns:
-                if pattern.lower() in text_lower:
-                    features.append(f"通用-{category}:{pattern}")
+                pattern_lower = pattern.lower()
+                if pattern_lower in text_lower or self._fuzzy_match(pattern_lower, text_lower):
+                    category_features.append(pattern)
+            if category_features:
+                features.append(f"通用-{category}:{','.join(category_features)}")
         
         # 3. 提取数字相关的特征（如版本号、数量级等）
         number_patterns = {
@@ -237,7 +529,8 @@ class DomainClassifierTool:
             r"(\d+\.?\d*)\s*(MB|GB|TB)": "数据量要求",
             r"(\d+\.?\d*)\s*(用户|并发)": "用户量要求",
             r"(\d+\.?\d*)%": "百分比指标",
-            r"版本\s*(\d+\.?\d*\.?\d*)": "版本要求"
+            r"版本\s*(\d+\.?\d*\.?\d*)": "版本要求",
+            r"(\d+\.?\d*)\s*(条|个|项)": "数量要求"
         }
         
         for pattern, feature_name in number_patterns.items():
@@ -245,7 +538,11 @@ class DomainClassifierTool:
             if matches:
                 for match in matches:
                     value = match[0] if isinstance(match, tuple) else match
-                    features.append(f"指标-{feature_name}:{value}")
+                    # 根据特征名称和上下文判断领域
+                    if feature_name in ["数据量要求", "响应时间要求"] or "数据" in text_lower:
+                        features.append(f"数据处理-{feature_name}:{value}")
+                    else:
+                        features.append(f"指标-{feature_name}:{value}")
         
         # 4. 提取时间相关的特征
         time_patterns = {
