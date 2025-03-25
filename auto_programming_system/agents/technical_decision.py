@@ -1,6 +1,7 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Set
 from datetime import datetime
 from .base_agent import BaseAgent
+import re
 
 class TechnicalDecisionAgent(BaseAgent):
     """渐进式技术决策代理，负责技术选型和决策的渐进式处理。
@@ -23,6 +24,20 @@ class TechnicalDecisionAgent(BaseAgent):
         self.decision_history: List[Dict[str, Any]] = []
         self.current_decision_point: Optional[Dict[str, Any]] = None
         self.decision_context: Dict[str, Any] = {}
+        
+        # 确保配置不为空
+        if not hasattr(self, 'config') or self.config is None:
+            self.config = {
+                "decision_making": {
+                    "max_alternatives": 5,
+                    "min_confidence": 0.5,
+                    "feature_weights": {
+                        "keyword": 2,
+                        "pattern": 3,
+                        "context": 1
+                    }
+                }
+            }
         
     async def update_context(self, new_context: Dict[str, Any]) -> Dict[str, Any]:
         """更新代理上下文。
@@ -103,28 +118,107 @@ class TechnicalDecisionAgent(BaseAgent):
         # 获取决策配置
         decision_config = self.config.get("decision_making", {})
         max_alternatives = decision_config.get("max_alternatives", 5)
-        min_confidence = decision_config.get("min_confidence", 0.7)
+        min_confidence = decision_config.get("min_confidence", 0.3)  # 进一步降低最小置信度阈值
         
-        # 定义决策点类型和关键词映射
-        decision_types = {
-            "data_processing": ["处理", "分析", "转换"],
-            "storage": ["存储", "保存", "数据库"],
-            "performance": ["性能", "速度", "效率"]
+        # 定义决策点类型和特征
+        decision_features = {
+            "data_processing": {
+                "keywords": ["处理", "分析", "转换", "清洗", "过滤", "聚合", "计算", "统计", "CSV", "文件"],
+                "patterns": [
+                    r"数据.*处理",
+                    r"数据.*分析",
+                    r"数据.*转换",
+                    r"数据.*清洗",
+                    r"数据.*过滤",
+                    r"数据.*聚合",
+                    r"计算.*平均值",
+                    r"统计.*数据",
+                    r"CSV.*文件",
+                    r"文件.*处理"
+                ],
+                "context_words": ["数据", "信息", "记录", "日志", "指标", "CSV", "表格", "文件", "计算", "统计"]
+            },
+            "storage": {
+                "keywords": ["存储", "保存", "数据库", "缓存", "持久化", "写入", "记录", "DB"],
+                "patterns": [
+                    r"数据.*存储",
+                    r"数据.*保存",
+                    r"使用.*数据库",
+                    r"数据.*缓存",
+                    r"数据.*持久化",
+                    r"保存.*数据",
+                    r"写入.*数据",
+                    r"数据库.*保存"
+                ],
+                "context_words": ["数据", "文件", "记录", "配置", "状态", "数据库", "存储", "DB", "持久化"]
+            },
+            "performance": {
+                "keywords": ["性能", "速度", "效率", "优化", "并发", "响应", "提升", "改进", "快速"],
+                "patterns": [
+                    r"性能.*优化",
+                    r"提高.*速度",
+                    r"提升.*效率",
+                    r"并发.*处理",
+                    r"响应.*时间",
+                    r"优化.*性能",
+                    r"改进.*效率",
+                    r"优化.*处理"
+                ],
+                "context_words": ["性能", "速度", "效率", "时间", "资源", "优化", "提升", "快速", "改进"]
+            }
         }
         
         # 分析需求中的技术决策点
         for req in requirements:
-            for decision_type, keywords in decision_types.items():
-                if any(keyword in req.lower() for keyword in keywords):
-                    decision_point = {
-                        "type": decision_type,
-                        "content": req,
-                        "confidence": 0.9 - (0.05 * list(decision_types.keys()).index(decision_type)),
-                        "dependencies": [],
-                        "constraints": self._extract_constraints(req, constraints)
-                    }
-                    decision_points.append(decision_point)
-                    break
+            req_lower = req.lower()
+            for decision_type, features in decision_features.items():
+                # 计算特征匹配分数
+                feature_score = 0
+                total_features = 0
+                
+                # 关键词匹配（增加权重）
+                keyword_matches = sum(1 for keyword in features["keywords"] if keyword in req_lower)
+                feature_score += keyword_matches * 3  # 增加关键词权重
+                total_features += len(features["keywords"]) * 3
+                
+                # 模式匹配（增加权重）
+                pattern_matches = sum(1 for pattern in features["patterns"] if re.search(pattern, req_lower))
+                feature_score += pattern_matches * 4  # 增加模式匹配权重
+                total_features += len(features["patterns"]) * 4
+                
+                # 上下文匹配（增加权重）
+                context_matches = sum(1 for word in features["context_words"] if word in req_lower)
+                feature_score += context_matches * 2  # 增加上下文匹配权重
+                total_features += len(features["context_words"]) * 2
+                
+                # 计算置信度
+                if total_features > 0:
+                    confidence = feature_score / total_features
+                    # 添加额外的置信度提升
+                    if pattern_matches > 0:  # 如果有模式匹配，增加置信度
+                        confidence += 0.1
+                    if keyword_matches >= 2:  # 如果有多个关键词匹配，增加置信度
+                        confidence += 0.1
+                    if context_matches >= 3:  # 如果有多个上下文词匹配，增加置信度
+                        confidence += 0.1
+                    
+                    # 确保置信度不超过1.0
+                    confidence = min(confidence, 1.0)
+                    
+                    if confidence >= min_confidence:
+                        decision_point = {
+                            "type": decision_type,
+                            "content": req,
+                            "confidence": confidence,
+                            "dependencies": [],
+                            "constraints": self._extract_constraints(req, constraints),
+                            "features": {
+                                "keyword_matches": keyword_matches,
+                                "pattern_matches": pattern_matches,
+                                "context_matches": context_matches
+                            }
+                        }
+                        decision_points.append(decision_point)
         
         # 分析决策点之间的依赖关系
         decision_points = await self._analyze_dependencies(decision_points)
@@ -341,20 +435,56 @@ class TechnicalDecisionAgent(BaseAgent):
         )
     
     def _extract_constraints(self, requirement: str, constraints: List[str]) -> List[str]:
-        """从需求和约束中提取相关约束。
+        """从约束列表中提取与需求相关的约束。
         
         Args:
-            requirement: 需求文本
+            requirement: 需求描述
             constraints: 约束条件列表
             
         Returns:
-            相关约束列表
+            与需求相关的约束列表
         """
-        requirement_keywords = requirement.lower().split()
-        return [
-            constraint for constraint in constraints
-            if any(keyword in constraint.lower() for keyword in requirement_keywords)
-        ]
+        relevant_constraints = []
+        requirement_lower = requirement.lower()
+        
+        # 定义约束类型和关键词
+        constraint_keywords = {
+            "performance": ["性能", "速度", "效率", "时间", "资源"],
+            "memory": ["内存", "存储", "空间"],
+            "dependency": ["依赖", "库", "包", "模块"],
+            "compatibility": ["兼容", "支持", "版本"]
+        }
+        
+        # 遍历每个约束
+        for constraint in constraints:
+            constraint_lower = constraint.lower()
+            
+            # 检查约束是否与需求相关
+            is_relevant = False
+            
+            # 1. 直接关键词匹配
+            for keywords in constraint_keywords.values():
+                if any(keyword in requirement_lower and keyword in constraint_lower for keyword in keywords):
+                    is_relevant = True
+                    break
+            
+            # 2. 上下文相关性检查
+            if not is_relevant:
+                if "性能" in requirement_lower and any(word in constraint_lower for word in ["时间", "速度", "效率"]):
+                    is_relevant = True
+                elif "数据" in requirement_lower and any(word in constraint_lower for word in ["存储", "内存", "空间"]):
+                    is_relevant = True
+                elif "处理" in requirement_lower and any(word in constraint_lower for word in ["库", "依赖", "模块"]):
+                    is_relevant = True
+            
+            # 3. 通用约束总是相关
+            if any(word in constraint_lower for word in ["使用", "必须", "不能", "应该"]):
+                is_relevant = True
+            
+            if is_relevant:
+                relevant_constraints.append(constraint)
+        
+        return relevant_constraints
     
     def _calculate_option_score(self, option: Dict[str, Any], 
                               requirements: List[str], 
@@ -379,9 +509,35 @@ class TechnicalDecisionAgent(BaseAgent):
         
         # 计算基础分数
         score = 0.3  # 基础分
-        score += complexity_scores.get(option["implementation_complexity"], 0.1)
-        score += len(option["pros"]) * 0.1
-        score -= len(option["cons"]) * 0.05
+        
+        # 实现复杂度评分
+        complexity = option.get("implementation_complexity", "medium")
+        score += complexity_scores.get(complexity, 0.1)
+        
+        # 优点评分
+        pros = option.get("pros", [])
+        score += min(len(pros) * 0.1, 0.4)  # 最多加0.4分
+        
+        # 缺点评分
+        cons = option.get("cons", [])
+        score -= min(len(cons) * 0.05, 0.3)  # 最多减0.3分
+        
+        # 约束满足度评分
+        constraint_score = 0
+        for constraint in constraints:
+            if any(keyword in option["description"].lower() for keyword in constraint.lower().split()):
+                constraint_score += 0.1
+        score += min(constraint_score, 0.2)  # 最多加0.2分
+        
+        # 技术栈兼容性评分
+        if "dependencies" in option:
+            compatibility_score = 1 - (len(option["dependencies"]) * 0.1)
+            score += max(compatibility_score, 0) * 0.2  # 最多加0.2分
+        
+        # 集成成本评分
+        if "integration_cost" in option:
+            cost_score = 1 - option["integration_cost"]
+            score += cost_score * 0.1  # 最多加0.1分
         
         # 确保分数在0-1之间
         return max(0.0, min(1.0, score))
@@ -434,20 +590,40 @@ class TechnicalDecisionAgent(BaseAgent):
             decision_points: 决策点列表
             
         Returns:
-            包含依赖关系的决策点列表
+            添加了依赖关系的决策点列表
         """
-        # 定义依赖关系规则
+        # 定义依赖规则
         dependency_rules = {
-            "storage": ["data_processing"],
-            "performance": ["data_processing", "storage"]
+            "data_processing": {
+                "depends_on": [],
+                "required_by": ["storage", "performance"]
+            },
+            "storage": {
+                "depends_on": ["data_processing"],
+                "required_by": ["performance"]
+            },
+            "performance": {
+                "depends_on": ["data_processing", "storage"],
+                "required_by": []
+            }
         }
         
-        for point in decision_points:
-            dependencies = []
-            if point["type"] in dependency_rules:
-                for other_point in decision_points:
-                    if other_point["type"] in dependency_rules[point["type"]]:
-                        dependencies.append(other_point["type"])
-            point["dependencies"] = dependencies
-            
+        # 为每个决策点分析依赖
+        for i, point in enumerate(decision_points):
+            point_type = point["type"]
+            if point_type in dependency_rules:
+                # 添加依赖
+                for dep_type in dependency_rules[point_type]["depends_on"]:
+                    for j, other_point in enumerate(decision_points):
+                        if other_point["type"] == dep_type and j != i:
+                            if j not in point["dependencies"]:
+                                point["dependencies"].append(j)
+                
+                # 添加被依赖
+                for req_type in dependency_rules[point_type]["required_by"]:
+                    for j, other_point in enumerate(decision_points):
+                        if other_point["type"] == req_type and j != i:
+                            if i not in other_point["dependencies"]:
+                                other_point["dependencies"].append(i)
+        
         return decision_points 
