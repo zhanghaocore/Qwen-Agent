@@ -7,6 +7,15 @@ from typing import Dict, List, Any, Optional
 import json
 import re
 from difflib import SequenceMatcher
+from datetime import datetime
+import uuid
+
+from .question_bank import (
+    QuestionBankManager,
+    Question,
+    QuestionType,
+    QuestionDifficulty
+)
 
 
 class DomainClassifierTool:
@@ -223,7 +232,7 @@ class DomainClassifierTool:
         strong_features = {
             "web应用": ["网站", "前端", "页面", "ui", "web", "电商", "商城", "购物", "商品", "界面", "展示", "平台"],
             "数据处理": ["数据分析", "数据处理", "数据挖掘", "etl", "数据清洗", "数据统计", "可视化", "报表"],
-            "API服务": ["api", "接口", "微服务", "服务", "restful", "rpc"]
+            "API服务": ["api", "接口", "微服务", "restful", "rpc"]
         }
         
         # 根据强特征词初步判断领域
@@ -565,303 +574,176 @@ class QuestionGeneratorTool:
     
     description = "基于已有的需求信息和对话历史，生成下一步应该询问的问题，以深化需求理解"
     parameters = [{
-        'name': 'domain',
+        'name': 'requirement_text',
         'type': 'string',
-        'description': '需求所属的主要领域',
-        'required': True
-    }, {
-        'name': 'current_understanding',
-        'type': 'string',
-        'description': '当前对需求的理解摘要',
-        'required': True
-    }, {
-        'name': 'discussion_history',
-        'type': 'string',
-        'description': '已讨论过的问题和答案',
+        'description': '用户的初始需求描述文本',
         'required': True
     }]
     
     def __init__(self):
         """初始化问题生成器"""
-        # 定义领域特定的问题模板
-        self.domain_questions = {
-            "web应用": {
-                "需求概述": [
-                    "网站需要支持哪些主要功能模块？",
-                    "是否需要用户认证和权限管理？",
-                    "是否需要支持多语言？",
-                    "有特殊的浏览器兼容性要求吗？",
-                    "网站的目标用户群体是谁？"
-                ],
-                "功能详述": [
-                    "每个功能模块的具体操作流程是什么？",
-                    "需要哪些数据表单和展示页面？",
-                    "是否需要实时数据更新？",
-                    "是否需要集成第三方服务？",
-                    "用户权限需要划分为哪些层级？"
-                ],
-                "技术约束": [
-                    "前端框架是否有特定要求？",
-                    "后端技术栈是否有限制？",
-                    "数据库选型有什么偏好？",
-                    "是否需要支持移动端访问？",
-                    "对响应时间有什么要求？"
-                ],
-                "架构设计": [
-                    "预计的并发用户数是多少？",
-                    "数据库的数据量预估？",
-                    "是否需要考虑分布式部署？",
-                    "是否需要CDN加速？",
-                    "是否需要负载均衡？"
-                ],
-                "实现细节": [
-                    "页面布局的风格要求？",
-                    "是否需要响应式设计？",
-                    "表单验证的规则？",
-                    "数据缓存策略？",
-                    "错误处理和日志记录要求？"
-                ]
-            },
-            "数据处理": {
-                "需求概述": [
-                    "数据的主要来源是什么？",
-                    "数据处理的频率和时效性要求是什么？",
-                    "需要哪些类型的数据分析？",
-                    "数据量级和增长趋势如何？",
-                    "最终数据的使用场景是什么？"
-                ],
-                "功能详述": [
-                    "需要哪些数据清洗规则？",
-                    "需要生成哪些类型的报表？",
-                    "是否需要数据可视化？",
-                    "数据存储的时间跨度是多少？",
-                    "是否需要历史数据追溯？"
-                ],
-                "技术约束": [
-                    "对数据处理性能有什么要求？",
-                    "是否需要支持实时处理？",
-                    "数据安全性要求是什么？",
-                    "是否需要分布式处理？",
-                    "数据备份策略要求？"
-                ],
-                "架构设计": [
-                    "是否需要流处理架构？",
-                    "数据存储选型偏好？",
-                    "计算资源需求评估？",
-                    "是否需要任务调度系统？",
-                    "监控告警要求？"
-                ],
-                "实现细节": [
-                    "数据清洗的具体规则？",
-                    "数据质量的验证标准？",
-                    "异常数据的处理策略？",
-                    "数据导入导出格式？",
-                    "报表更新频率？"
-                ]
-            },
-            "API服务": {
-                "需求概述": [
-                    "API服务的主要用途是什么？",
-                    "预期的调用方有哪些？",
-                    "是否需要支持跨平台访问？",
-                    "对接口安全性有什么要求？",
-                    "服务可用性要求是什么？"
-                ],
-                "功能详述": [
-                    "需要提供哪些具体接口？",
-                    "每个接口的输入输出定义？",
-                    "是否需要版本控制？",
-                    "是否需要接口文档？",
-                    "错误处理策略是什么？"
-                ],
-                "技术约束": [
-                    "接口协议选择(REST/GraphQL/gRPC)？",
-                    "认证方式要求？",
-                    "并发处理能力要求？",
-                    "响应时间要求？",
-                    "是否需要支持异步调用？"
-                ],
-                "架构设计": [
-                    "是否采用微服务架构？",
-                    "服务发现机制选择？",
-                    "负载均衡策略？",
-                    "限流降级方案？",
-                    "监控方案选择？"
-                ],
-                "实现细节": [
-                    "接口参数验证规则？",
-                    "缓存策略设计？",
-                    "日志记录要求？",
-                    "测试覆盖率要求？",
-                    "部署环境要求？"
-                ]
-            }
-        }
+        self.question_bank = QuestionBankManager()
+        self._initialize_question_bank()
+    
+    def _initialize_question_bank(self):
+        """初始化问题库"""
+        # 添加一些基础问题
+        base_questions = [
+            Question(
+                id=str(uuid.uuid4()),
+                type=QuestionType.FUNCTIONAL,
+                difficulty=QuestionDifficulty.MEDIUM,
+                content="这个功能的主要用户是谁？",
+                answer="需要明确目标用户群体，包括用户角色、使用场景等",
+                tags=["用户分析", "需求分析"],
+                domain="通用",
+                dependencies=[],
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+                version=1,
+                metadata={"stage": "initial"}
+            ),
+            Question(
+                id=str(uuid.uuid4()),
+                type=QuestionType.TECHNICAL,
+                difficulty=QuestionDifficulty.MEDIUM,
+                content="系统需要处理的数据量大概是多少？",
+                answer="需要评估数据规模，包括用户数量、数据量、并发量等",
+                tags=["性能", "架构"],
+                domain="通用",
+                dependencies=[],
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+                version=1,
+                metadata={"stage": "initial"}
+            ),
+            # 添加更多基础问题...
+        ]
         
-        # 定义通用问题
-        self.general_questions = {
-            "需求概述": [
-                "这个系统的主要目标是什么？",
-                "目标用户群体是谁？",
-                "系统需要解决什么核心问题？",
-                "有哪些现有系统可以参考？",
-                "项目的时间节点要求是什么？"
-            ],
-            "功能详述": [
-                "系统需要哪些核心功能？",
-                "功能的优先级排序是什么？",
-                "是否有可选的扩展功能？",
-                "用户操作流程是什么？",
-                "需要什么样的用户界面？"
-            ],
-            "技术约束": [
-                "是否有特定的技术栈要求？",
-                "性能要求是什么？",
-                "安全性要求是什么？",
-                "可用性要求是什么？",
-                "可维护性要求是什么？"
-            ],
-            "架构设计": [
-                "系统的使用规模是多大？",
-                "是否需要考虑扩展性？",
-                "是否有特殊的部署要求？",
-                "是否需要与其他系统集成？",
-                "数据备份恢复要求是什么？"
-            ],
-            "实现细节": [
-                "开发规范要求是什么？",
-                "测试要求是什么？",
-                "文档要求是什么？",
-                "部署环境是什么？",
-                "运维要求是什么？"
-            ]
-        }
+        for question in base_questions:
+            self.question_bank.add_question(question)
     
     def call(self, params: str, **kwargs) -> str:
-        """生成推进需求理解的问题"""
+        """
+        生成下一个问题
+        
+        Args:
+            params: 参数JSON字符串
+            **kwargs: 其他参数
+            
+        Returns:
+            生成的问题JSON字符串
+        """
         try:
+            # 解析参数
             params_dict = json.loads(params)
-            domain = params_dict.get('domain', '')
-            current_understanding = params_dict.get('current_understanding', '')
-            discussion_history = params_dict.get('discussion_history', '')
+            requirement_text = params_dict.get('requirement_text', '')
             
-            # 获取当前对话阶段
-            stage = self._determine_discussion_stage(discussion_history)
+            # 获取领域分类
+            domain_classifier = DomainClassifierTool()
+            domain_result = json.loads(domain_classifier.call(json.dumps({
+                'requirement_text': requirement_text
+            })))
+            domains = domain_result.get('domains', [])
             
-            # 生成下一步问题
-            next_questions = self._generate_questions_for_stage(
-                domain, current_understanding, stage, discussion_history
+            # 根据领域和当前理解生成问题
+            questions = self._generate_questions_for_stage(
+                domains=domains,
+                current_understanding=requirement_text,
+                stage=self._determine_discussion_stage(requirement_text)
             )
             
+            # 从问题库中获取相关问题
+            bank_questions = self._get_relevant_questions(domains, requirement_text)
+            
+            # 合并生成的问题和问题库中的问题
+            all_questions = questions + bank_questions
+            
+            # 返回结果
             return json.dumps({
-                'current_stage': stage,
-                'next_questions': next_questions,
-                'explanation': self._get_stage_explanation(stage)
-            }, ensure_ascii=False)
+                'questions': all_questions,
+                'stage': self._determine_discussion_stage(requirement_text),
+                'domains': domains
+            })
             
         except Exception as e:
-            return f"问题生成过程出错: {str(e)}"
+            return json.dumps({
+                'error': str(e),
+                'questions': []
+            })
     
-    def _determine_discussion_stage(self, discussion_history: str) -> str:
-        """根据讨论历史确定当前处于哪个阶段"""
-        stages = ["需求概述", "功能详述", "技术约束", "架构设计", "实现细节"]
+    def _get_relevant_questions(self, domains: List[str], requirement_text: str) -> List[str]:
+        """
+        从问题库中获取相关问题
         
-        try:
-            history = json.loads(discussion_history)
-            # 计算讨论轮数
-            rounds = len([msg for msg in history if msg.get("role") == "user"])
+        Args:
+            domains: 领域列表
+            requirement_text: 需求文本
             
-            # 根据讨论轮数和内容特征判断阶段
-            if rounds < 2:
-                return stages[0]
-            elif rounds < 5:
-                return stages[1]
-            elif rounds < 8:
-                return stages[2]
-            elif rounds < 12:
-                return stages[3]
-            else:
-                return stages[4]
-        except:
-            # 如果解析失败，使用简单的字符串匹配
-            rounds = discussion_history.count("问题:")
-            if rounds < 2:
-                return stages[0]
-            elif rounds < 5:
-                return stages[1]
-            elif rounds < 8:
-                return stages[2]
-            elif rounds < 12:
-                return stages[3]
-            else:
-                return stages[4]
+        Returns:
+            相关问题列表
+        """
+        questions = []
+        
+        # 按领域获取问题
+        for domain in domains:
+            domain_questions = self.question_bank.get_questions_by_domain(domain)
+            questions.extend(domain_questions)
+        
+        # 按关键词搜索问题
+        keywords = self._extract_keywords(requirement_text)
+        for keyword in keywords:
+            keyword_questions = self.question_bank.search_questions(keyword)
+            questions.extend(keyword_questions)
+        
+        # 去重并转换为文本
+        unique_questions = list(set(q.content for q in questions))
+        return unique_questions
+    
+    def _extract_keywords(self, text: str) -> List[str]:
+        """
+        从文本中提取关键词
+        
+        Args:
+            text: 输入文本
+            
+        Returns:
+            关键词列表
+        """
+        # 简单的关键词提取实现
+        words = text.split()
+        # 过滤停用词和短词
+        keywords = [w for w in words if len(w) > 2]
+        return list(set(keywords))  # 去重
+    
+    def _determine_discussion_stage(self, requirement_text: str) -> str:
+        """根据需求文本确定当前讨论阶段"""
+        # 简单的文本长度判断，实际应用中可能需要更复杂的逻辑
+        if len(requirement_text) < 100:
+            return "initial"
+        elif len(requirement_text) < 500:
+            return "detailed"
+        else:
+            return "final"
     
     def _generate_questions_for_stage(
-        self, domain: str, current_understanding: str,
-        stage: str, discussion_history: str
+        self, domains: List[str], current_understanding: str, stage: str
     ) -> List[str]:
         """根据当前阶段生成适当的问题"""
-        # 获取已经问过的问题
-        asked_questions = self._extract_asked_questions(discussion_history)
+        # 根据阶段从问题库中获取相关问题
+        stage_questions = self.question_bank.search_questions(
+            query="",
+            question_type=QuestionType.FUNCTIONAL if stage == "initial" else QuestionType.TECHNICAL
+        )
         
-        # 获取领域特定问题
-        domain_specific_questions = self.domain_questions.get(domain, {}).get(stage, [])
+        # 过滤掉不相关的问题
+        relevant_questions = []
+        for question in stage_questions:
+            # 检查问题是否与当前领域相关
+            if any(domain in question.domain for domain in domains):
+                relevant_questions.append(question.content)
         
-        # 获取通用问题
-        general_questions = self.general_questions.get(stage, [])
-        
-        # 合并问题并去除已问过的
-        all_questions = domain_specific_questions + general_questions
-        new_questions = [q for q in all_questions if q not in asked_questions]
-        
-        # 如果没有新问题，使用下一阶段的问题
-        if not new_questions:
-            stages = ["需求概述", "功能详述", "技术约束", "架构设计", "实现细节"]
-            current_index = stages.index(stage)
-            if current_index < len(stages) - 1:
-                next_stage = stages[current_index + 1]
-                domain_specific_questions = self.domain_questions.get(domain, {}).get(next_stage, [])
-                general_questions = self.general_questions.get(next_stage, [])
-                new_questions = domain_specific_questions + general_questions
-        
-        # 返回前5个问题
-        return new_questions[:5]
-    
-    def _extract_asked_questions(self, discussion_history: str) -> List[str]:
-        """从讨论历史中提取已经问过的问题"""
-        asked_questions = []
-        try:
-            history = json.loads(discussion_history)
-            for msg in history:
-                if msg.get("role") == "assistant":
-                    content = msg.get("content", "")
-                    # 提取问题（假设问题以问号结尾）
-                    questions = [
-                        q.strip() for q in content.split("\n")
-                        if "?" in q or "？" in q
-                    ]
-                    asked_questions.extend(questions)
-        except:
-            # 如果解析失败，使用简单的文本匹配
-            questions = [
-                q.strip() for q in discussion_history.split("\n")
-                if "?" in q or "？" in q
-            ]
-            asked_questions.extend(questions)
-        
-        return asked_questions
-    
-    def _get_stage_explanation(self, stage: str) -> str:
-        """获取当前阶段的说明"""
-        explanations = {
-            "需求概述": "我们正处于需求理解的初始阶段，需要了解系统的基本目标和用户场景。",
-            "功能详述": "现在我们需要深入了解系统的具体功能和优先级，确保不遗漏关键需求。",
-            "技术约束": "在这个阶段，我们需要明确系统的技术约束和性能要求，为架构设计奠定基础。",
-            "架构设计": "基于已了解的功能和约束，我们需要确定合适的技术架构和框架选择。",
-            "实现细节": "最后，我们需要细化实现细节，确保系统的各个组件能够顺利开发和集成。"
-        }
-        
-        return explanations.get(stage, "让我们继续深入了解您的需求。")
+        return relevant_questions
 
 
 class TechDecisionAnalyzerTool:
