@@ -144,6 +144,244 @@ POST /api/v1/validate
 }
 ```
 
+### 技术决策API
+
+#### 识别决策点
+
+```
+POST /api/v1/decisions/identify
+```
+
+识别需求中的技术决策点。
+
+**请求体参数：**
+
+```json
+{
+  "requirement": "创建一个高性能的数据处理系统，需要处理大量CSV文件，并支持实时数据分析",
+  "context": {
+    "project_type": "data_processing",
+    "scale": "large",
+    "performance_requirements": ["high_throughput", "low_latency"]
+  }
+}
+```
+
+**响应：**
+
+```json
+{
+  "status": "success",
+  "decision_points": [
+    {
+      "id": "dp_001",
+      "type": "data_processing",
+      "description": "选择数据处理框架",
+      "confidence": 0.85,
+      "constraints": [
+        "高性能",
+        "支持CSV处理",
+        "实时分析能力"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "dp_002",
+      "type": "storage",
+      "description": "选择数据存储方案",
+      "confidence": 0.92,
+      "constraints": [
+        "高吞吐量",
+        "低延迟",
+        "可扩展性"
+      ],
+      "dependencies": ["dp_001"]
+    }
+  ]
+}
+```
+
+#### 生成技术选项
+
+```
+POST /api/v1/decisions/options
+```
+
+为决策点生成可行的技术选项。
+
+**请求体参数：**
+
+```json
+{
+  "decision_point": {
+    "id": "dp_001",
+    "type": "data_processing",
+    "description": "选择数据处理框架",
+    "constraints": [
+      "高性能",
+      "支持CSV处理",
+      "实时分析能力"
+    ]
+  },
+  "context": {
+    "project_scale": "large",
+    "team_expertise": ["python", "data_processing"]
+  }
+}
+```
+
+**响应：**
+
+```json
+{
+  "status": "success",
+  "options": [
+    {
+      "id": "opt_001",
+      "name": "pandas + dask",
+      "description": "使用pandas进行基础处理，dask进行分布式计算",
+      "pros": [
+        "成熟的数据处理生态系统",
+        "良好的CSV支持",
+        "分布式计算能力"
+      ],
+      "cons": [
+        "学习曲线较陡",
+        "内存使用较高"
+      ],
+      "complexity": "medium",
+      "implementation_time": "2-3周"
+    },
+    {
+      "id": "opt_002",
+      "name": "vaex",
+      "description": "使用vaex进行大数据处理",
+      "pros": [
+        "内存效率高",
+        "处理速度快",
+        "API简单"
+      ],
+      "cons": [
+        "社区相对较小",
+        "功能相对有限"
+      ],
+      "complexity": "low",
+      "implementation_time": "1-2周"
+    }
+  ]
+}
+```
+
+#### 评估技术选项
+
+```
+POST /api/v1/decisions/evaluate
+```
+
+评估技术选项的可行性和优劣。
+
+**请求体参数：**
+
+```json
+{
+  "decision_point": {
+    "id": "dp_001",
+    "type": "data_processing",
+    "description": "选择数据处理框架",
+    "constraints": [
+      "高性能",
+      "支持CSV处理",
+      "实时分析能力"
+    ]
+  },
+  "option": {
+    "id": "opt_001",
+    "name": "pandas + dask",
+    "description": "使用pandas进行基础处理，dask进行分布式计算"
+  },
+  "evaluation_criteria": {
+    "performance": 0.4,
+    "maintainability": 0.3,
+    "scalability": 0.3
+  }
+}
+```
+
+**响应：**
+
+```json
+{
+  "status": "success",
+  "evaluation": {
+    "score": 0.85,
+    "breakdown": {
+      "performance": 0.9,
+      "maintainability": 0.8,
+      "scalability": 0.85
+    },
+    "reasoning": "pandas + dask组合提供了最佳的性能和可扩展性平衡。pandas提供强大的数据处理能力，而dask支持分布式计算，满足大规模数据处理需求。虽然学习曲线较陡，但生态系统成熟，社区支持好。",
+    "risks": [
+      {
+        "type": "technical",
+        "description": "需要合理配置dask集群以获得最佳性能",
+        "mitigation": "提供详细的集群配置指南和性能调优建议"
+      }
+    ],
+    "recommendation": "strong"
+  }
+}
+```
+
+#### 记录技术决策
+
+```
+POST /api/v1/decisions/record
+```
+
+记录最终的技术决策。
+
+**请求体参数：**
+
+```json
+{
+  "decision_point": {
+    "id": "dp_001",
+    "type": "data_processing",
+    "description": "选择数据处理框架"
+  },
+  "selected_option": {
+    "id": "opt_001",
+    "name": "pandas + dask"
+  },
+  "reasoning": "选择pandas + dask组合，因为：\n1. 提供最佳的性能和可扩展性平衡\n2. 生态系统成熟，社区支持好\n3. 满足所有约束条件",
+  "context": {
+    "project_id": "proj_001",
+    "decision_date": "2024-03-26",
+    "decision_maker": "system"
+  }
+}
+```
+
+**响应：**
+
+```json
+{
+  "status": "success",
+  "decision_record": {
+    "id": "dr_001",
+    "decision_point_id": "dp_001",
+    "selected_option_id": "opt_001",
+    "timestamp": "2024-03-26T10:30:00Z",
+    "status": "recorded",
+    "metadata": {
+      "project_id": "proj_001",
+      "decision_maker": "system",
+      "confidence": 0.85
+    }
+  }
+}
+```
+
 ## 编程接口
 
 ### Python SDK
