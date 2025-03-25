@@ -19,9 +19,10 @@
 1. **需求分析系统**：解析自然语言，提取关键信息
    - **基础分析**：基本的文本处理和需求解析
    - **高级分析**：多层次需求挖掘和逐步推理
-2. **代码生成引擎**：根据结构化描述生成Python代码
-3. **执行验证环境**：在安全沙箱中测试和验证代码
-4. **迭代优化机制**：通过反馈循环持续改进代码质量
+2. **技术决策**：提供技术栈选择建议和备选方案分析
+3. **代码生成引擎**：根据结构化描述生成Python代码
+4. **执行验证环境**：在安全沙箱中测试和验证代码
+5. **迭代优化机制**：通过反馈循环持续改进代码质量
 
 ## 快速开始
 
@@ -52,26 +53,37 @@ python -m pytest auto_programming_system/tests/test_advanced_requirement_analysi
 
 ```text
 auto_programming_system/
-├── requirement_analysis/         # 需求分析模块
-│   ├── advanced_analysis/        # 高级需求分析模块（多层次需求挖掘）
-│   ├── preprocessor/             # 文本预处理模块
-│   ├── semantic_analyzer/        # 语义分析模块
-│   ├── dsl_converter/            # DSL转换模块
-│   └── validator/                # 规范验证模块
-├── code_generation/              # 代码生成模块
-├── execution_validation/         # 执行验证模块
-├── optimization/                 # 迭代优化模块
-├── common/                       # 共享组件
-├── templates/                    # 代码模板
-├── tests/                        # 单元测试和集成测试
-│   ├── requirement_analysis/     # 需求分析模块测试
-│   ├── test_integration.py      # 集成测试
-│   ├── test_advanced_requirement_analysis.py  # 高级需求分析测试
-│   └── test_code_generation.py   # 代码生成测试
-├── examples/                     # 使用示例
-└── docs/                         # 项目文档
-    └── modules/                  # 模块文档
-        └── requirement_analysis/ # 需求分析模块文档
+├── agents/                    # 智能代理模块
+│   ├── base_agent.py         # 基础代理类
+│   ├── requirement_agent.py  # 需求分析代理
+│   ├── technical_agent.py    # 技术决策代理
+│   └── code_agent.py         # 代码生成代理
+├── requirement_analysis/      # 需求分析模块
+│   ├── basic_analysis/       # 基础分析
+│   └── advanced_analysis/    # 高级分析
+├── technical_decision/       # 技术决策模块
+│   ├── decision_point.py     # 决策点定义
+│   ├── option_generator.py   # 选项生成器
+│   ├── evaluator.py          # 选项评估器
+│   └── README.md            # 模块文档
+├── code_generation/          # 代码生成模块
+│   ├── templates/           # 代码模板
+│   ├── generators/          # 生成器
+│   └── optimizers/          # 优化器
+├── execution/               # 执行验证模块
+│   ├── runner.py           # 代码运行器
+│   ├── validator.py        # 结果验证器
+│   └── profiler.py         # 性能分析器
+├── tests/                  # 测试目录
+│   ├── test_requirement_analysis/
+│   ├── test_technical_decision/
+│   └── test_code_generation/
+├── docs/                   # 文档目录
+│   ├── modules/           # 模块文档
+│   └── api/               # API文档
+├── examples/              # 示例代码
+├── requirements.txt       # 项目依赖
+└── README.md             # 项目说明
 ```
 
 ## 特色功能
